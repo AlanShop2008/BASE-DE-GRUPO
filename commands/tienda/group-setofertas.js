@@ -1,0 +1,16 @@
+let handler = async (m, { conn, text, isROwner, isOwner }) => {
+
+if (text) {
+global.db.data.chats[m.chat].sOfertas = text
+conn.reply(m.chat, `Ofertas 𝙖𝙘𝙩𝙪𝙖𝙡𝙞𝙯𝙖𝙙𝙤`, m)  
+
+} else throw `𝙀𝙨𝙘𝙧𝙞𝙗𝙚 𝙡𝙤 𝙙𝙞𝙨𝙥𝙤𝙣𝙞𝙗𝙡𝙚`
+}
+
+handler.help = ['setofertas + Texto']
+handler.tags = ['ventas']
+handler.command = ['setofertas'] 
+handler.botAdmin = true
+handler.admin = true
+handler.group = true
+export default handler

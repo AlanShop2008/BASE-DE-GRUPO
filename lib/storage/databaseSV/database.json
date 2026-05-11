@@ -1,0 +1,263 @@
+{
+  "users": {
+    "5215637362813@s.whatsapp.net": {
+      "exp": null
+    },
+    "152888621965357@lid": {
+      "exp": null
+    },
+    "21724112404637@lid": {
+      "exp": null
+    },
+    "90774821675026@lid": {
+      "exp": null
+    },
+    "242133730599039@lid": {
+      "exp": null
+    },
+    "205364079378458@lid": {
+      "exp": null
+    },
+    "211535947415608@lid": {
+      "exp": null
+    },
+    "71649416229030@lid": {
+      "exp": null
+    },
+    "206957344456804@lid": {
+      "exp": null
+    },
+    "86793470881809@lid": {
+      "exp": null
+    },
+    "143822013087745@lid": {
+      "exp": null
+    },
+    "199278295281757@lid": {
+      "exp": null
+    },
+    "6052229689544@lid": {
+      "exp": null
+    },
+    "114646317035521@lid": {
+      "exp": null
+    },
+    "107558882807995@lid": {
+      "exp": null
+    }
+  },
+  "chats": {
+    "undefined": {
+      "Botname": "ɴᴇxxᴏ ʙᴏᴛ",
+      "TextBot": "ɴᴇxxᴏ ʙᴏᴛ",
+      "shortname": "ɴᴇxxᴏ ʙᴏᴛ",
+      "currency": "Coins",
+      "banner": "https://raw.githubusercontent.com/WillZek/Kitty-Storage/main/image/1771466831407-a7b13a15.jpg",
+      "icon1": "https://raw.githubusercontent.com/WillZek/Kitty-Storage/main/image/1771466831407-a7b13a15.jpg",
+      "icon2": "https://raw.githubusercontent.com//KittyWillZek-Storage/main/image/1771466831407-a7b13a15.jpg"
+    },
+    "5215637362813@s.whatsapp.net": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "6052229689544@lid": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "120363427524092699@g.us": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "125018579189775@lid": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "120363406718581728@g.us": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "120363418736833159@g.us": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "120363419592241623@g.us": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "71649416229030@lid": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    },
+    "107558882807995@lid": {
+      "isBanned": false,
+      "antiLag": false,
+      "per": [
+        "5215637362813@s.whatsapp.net"
+      ],
+      "welcome": true,
+      "detect": false,
+      "sWelcome": "",
+      "sBye": "",
+      "sPromote": "",
+      "sDemote": "",
+      "autoresponder": false,
+      "antiLink": true,
+      "viewonce": false,
+      "useDocument": true,
+      "onlyLatinos": false,
+      "nsfw": false,
+      "allantilink": true,
+      "expired": 0
+    }
+  },
+  "stats": {},
+  "msgs": {},
+  "sticker": {},
+  "settings": {
+    "5215637362813@s.whatsapp.net": {
+      "self": false,
+      "autoread": false,
+      "restrict": true,
+      "actives": [],
+      "status": 0,
+      "noprefix": false,
+      "logo": ""
+    }
+  }
+}
