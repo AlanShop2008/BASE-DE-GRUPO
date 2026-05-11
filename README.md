@@ -1,4 +1,4 @@
-# ALAN BOT
+# ROKO BOT
 
 Bot desarrollado en **Node.js**.
 
