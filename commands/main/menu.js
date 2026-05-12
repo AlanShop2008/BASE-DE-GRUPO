@@ -73,17 +73,20 @@ ${comandos.map(menu =>
 
     await m.react('⚡️')
 
-    let pp = global.db.data.chats[m.chat]?.customPhotoM || './storage/img/catalogo.png'
-    let groupName = await conn.getName(m.chat)
-    let ppUrl
-    try {
-      ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-    } catch {
-      ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
+    // Configuración de imagen
+    let pp = './storage/img/catalogo.png'
+    if (!fs.existsSync(pp)) {
+        pp = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' // Imagen de respaldo si no existe el archivo
     }
 
-    // ENVÍO SIN ETIQUETA DE REENVIADO Y CON VERIFICADO
-    await conn.sendFile(m.chat, pp, 'menu.jpg', menuText, m, null, {
+    let ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png'
+    try {
+      const profile = await conn.profilePictureUrl(m.chat, 'image').catch(_ => null)
+      if (profile) ppUrl = profile
+    } catch (e) {}
+
+    // ENVÍO FINAL SIN REENVIADO
+    await conn.sendFile(m.chat, pp, 'menu.jpg', menuText, m, false, {
       mentions: [m.sender],
       contextInfo: {
         forwardingScore: 0,
@@ -101,8 +104,8 @@ ${comandos.map(menu =>
     })
 
   } catch (e) {
-    conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
     console.error(e)
+    conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
   }
 }
 
