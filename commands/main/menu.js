@@ -23,27 +23,15 @@ let tags = {
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-  let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
-  let name = await conn.getName(userId);
+    let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
+    let name = await conn.getName(userId);
 
     if (!global.db.data.users) global.db.data.users = {}
     let user = global.db.data.users[userId] || { exp: 0, premium: false }
 
-    let totalUsers = Object.values(global.db.data.users).filter(u => u.exp > 0).length
-    let totalPremium = Object.values(global.db.data.users).filter(u => u.premium).length
-
-    let help = Object.values(global.plugins)
-      .filter(plugin => !plugin.disabled)
-      .map(plugin => ({
-        help: Array.isArray(plugin.help) ? plugin.help : (plugin.help ? [plugin.help] : []),
-        tags: Array.isArray(plugin.tags) ? plugin.tags : (plugin.tags ? [plugin.tags] : []),
-        limit: plugin.limit,
-        premium: plugin.premium,
-      }))
     let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
-    let uptime = Object.values(process.uptime() * 1000)
     const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
-    let emojiM = global.db.data.chats[m.chat].customEmojiM || '🩵'
+    let emojiM = (global.db.data.chats[m.chat] && global.db.data.chats[m.chat].customEmojiM) || '🩵'
 
     let menuText = `_*¡𝐇𝐨𝐥𝐚 𝐁𝐢𝐞𝐧𝐯𝐞𝐧𝐢𝐝@ ${name} 𝐄𝐬𝐩𝐞𝐫𝐨 𝐲 𝐭𝐞𝐧𝐠𝐚𝐬 𝐮𝐧 𝐠𝐫𝐚𝐧 𝐝𝐢𝐚 ☀️!*_
 
@@ -58,6 +46,15 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 
 _*L I S T A - D E - C O M A N D O S*_
 `
+
+    let help = Object.values(global.plugins)
+      .filter(plugin => !plugin.disabled)
+      .map(plugin => ({
+        help: Array.isArray(plugin.help) ? plugin.help : (plugin.help ? [plugin.help] : []),
+        tags: Array.isArray(plugin.tags) ? plugin.tags : (plugin.tags ? [plugin.tags] : []),
+        limit: plugin.limit,
+        premium: plugin.premium,
+      }))
 
     for (let tag in tags) {
       let comandos = help.filter(menu => menu.tags.includes(tag))
@@ -76,31 +73,33 @@ ${comandos.map(menu =>
 
     await m.react('⚡️')
 
-   let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
-    
-let groupName = await conn.getName(m.chat)
-let ppUrl
-try {
-  ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-} catch {
-  ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
-}
-
-const fgrupo = {
-  key: {
-    fromMe: false,
-    participant: "0@s.whatsapp.net",
-    remoteJid: "status@broadcast",
-    id: "Undefined"
-  },
-  message: {
-    locationMessage: {
-      name: groupName, 
-      jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+    let pp = global.db.data.chats[m.chat]?.customPhotoM || './storage/img/catalogo.png'
+    let groupName = await conn.getName(m.chat)
+    let ppUrl
+    try {
+      ppUrl = await conn.profilePictureUrl(m.chat, 'image')
+    } catch {
+      ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
     }
-  }
-};
-   await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo, m, fake)
+
+    // ENVÍO LIMPIO SIN "REENVIADO" Y CON VERIFICADO SIMULADO
+    await conn.sendFile(m.chat, pp, 'menu.jpg', menuText, m, null, {
+      mentions: [m.sender],
+      contextInfo: {
+        forwardingScore: 0,
+        isForwarded: false,
+        externalAdReply: {
+          title: 'WhatsApp ✅', 
+          body: 'Alan Shop • Bot Service',
+          mediaType: 1,
+          previewType: 0,
+          renderLargerThumbnail: false,
+          thumbnailUrl: ppUrl,
+          sourceUrl: 'https://atom.bio/alanshop' 
+        }
+      }
+    })
+
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
     console.error(e)
@@ -118,21 +117,4 @@ function clockString(ms) {
   let m = Math.floor(ms / 60000) % 60
   let s = Math.floor(ms / 1000) % 60
   return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
-}
-
-function getSaludo() {
-  let options = {
-    timeZone: "America/Marigot",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: false
-  }
-
-  let horaStr = new Date().toLocaleString("es-DO", options)
-  let [hora] = horaStr.split(":").map(n => parseInt(n))
-
-  if (hora >= 5 && hora < 12) return `🌅 Buenos días | 🕒 ${horaStr}`
-  if (hora >= 12 && hora < 18) return `☀️ Buenas tardes | 🕒 ${horaStr}`
-  return `🌙 Buenas noches | 🕒 ${horaStr}`
 }
