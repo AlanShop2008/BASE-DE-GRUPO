@@ -41,7 +41,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 ┃ 💙 _𝖬𝐨𝐝𝐨_ : 𝐏𝐑𝐈𝐕𝐀𝐃𝐎
 ┃ 💙 _𝐅𝐞𝐜𝐡𝐚_ : ${fecha}
 ┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚𝐥_ : ${totalCommands}
-┃ 💙 _𝖢𝖱𝖤𝖠𝖣𝖮𝖱_ : *𝐀𝐋𝐀𝐍 𝐒𝐇𝐎𝐏*
+┃ 💙 _𝖢𝖱𝖤𝐀𝐃𝐎𝐑_ : *𝐀𝐋𝐀𝐍 𝐒𝐇𝐎𝐏*
 ━━━━━━━━━━━━━━━
 
 _*L I S T A - D E - C O M A N D O S*_
@@ -82,7 +82,7 @@ ${comandos.map(menu =>
       ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
     }
 
-    // ENVÍO LIMPIO SIN "REENVIADO" Y CON VERIFICADO SIMULADO
+    // ENVÍO SIN ETIQUETA DE REENVIADO Y CON VERIFICADO
     await conn.sendFile(m.chat, pp, 'menu.jpg', menuText, m, null, {
       mentions: [m.sender],
       contextInfo: {
