@@ -36,11 +36,11 @@ const handler = async (m, { conn, isOwner, isROwner }) => {
 
     fs.writeFileSync(rutaBanner, media)
 
-    await conn.reply(
-      m.chat,
-      '✅ Banner actualizado correctamente.\n\n📁 Se reemplazó: *storage/img/catalogo.png*',
-      m
-    )
+   await conn.reply(
+  m.chat,
+  '✅ Banner actualizado correctamente.',
+  m
+)
 
   } catch (e) {
     console.error(e)
