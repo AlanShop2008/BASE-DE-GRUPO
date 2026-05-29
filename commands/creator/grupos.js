@@ -8,6 +8,7 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
   if (command === 'grupos') {
     let groups = Object.entries(conn.chats || {})
       .filter(([jid, chat]) => jid.endsWith('@g.us'))
+      .filter(([jid, chat]) => !chat?.read_only)
       .map(([jid, chat]) => ({
         jid,
         name: chat.subject || chat.name || 'Sin nombre'
@@ -51,9 +52,18 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
     }
 
     await conn.reply(m.chat, `🚪 Saliendo del grupo:\n\n*${grupo.name}*`, m)
+
     await conn.groupLeave(grupo.jid)
 
-    return
+    // borrar del caché interno del bot
+    if (conn.chats && conn.chats[grupo.jid]) {
+      delete conn.chats[grupo.jid]
+    }
+
+    // borrar del caché de la lista del owner
+    gruposCache[m.sender] = groups.filter(g => g.jid !== grupo.jid)
+
+    return conn.reply(m.chat, `✅ El bot salió correctamente de:\n\n*${grupo.name}*`, m)
   }
 }
 
