@@ -7,7 +7,7 @@ const handler = async (m, { conn }) => {
 ╭──「 👑 𝐃𝐔𝐄𝐍̃𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓 」
 ┃
 ┃ 👤 𝐍𝐨𝐦𝐛𝐫𝐞: *${name}*
-┃ 📱 𝐍𝐮́𝐦𝐞𝐫𝐨: wa.me/${number}
+┃ 📱 𝐍𝐮́𝐦𝐞𝐫𝐨: ${number}
 ┃ 🤖 𝐁𝐨𝐭: *${botname}*
 ┃
 ╰━━━━━━━━━━━━⬣
