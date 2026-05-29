@@ -8,7 +8,7 @@ FN:${name}
 TEL;type=CELL;type=VOICE;waid=${number}:+${number}
 END:VCARD`
 
-  await m.react('👑')
+  await m.react('🫶')
 
   await conn.sendMessage(m.chat, {
     contacts: {
