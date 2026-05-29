@@ -8,7 +8,7 @@ const handler = async (m, { conn }) => {
   const texto = `
 ╭──「 👑 𝐃𝐔𝐄𝐍̃𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓 」
 ┃ 👤 𝐍𝐨𝐦𝐛𝐫𝐞: *${name}*
-┃ 📱 𝐍𝐮́𝐦𝐞𝐫𝐨: wa.me/${number}
+┃ 📱 𝐍𝐮́𝐦𝐞𝐫𝐨: ${number}
 ┃ 🤖 𝐁𝐨𝐭: *${botname}*
 ╰━━━━━━━━━━━━⬣
 `.trim()
@@ -22,7 +22,7 @@ const handler = async (m, { conn }) => {
     },
     message: {
       locationMessage: {
-        name: "ALAN SHOP • DUEÑO",
+        name: "ALAN SHOP",
         address: "Contacto oficial del bot",
         jpegThumbnail: fs.readFileSync('./storage/img/catalogo.png')
       }
