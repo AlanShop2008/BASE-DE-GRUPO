@@ -1,4 +1,6 @@
 const handler = async (m, { conn, command }) => {
+  if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
+
   let chat = global.db.data.chats[m.chat]
 
   if (command === 'desactivar') {
