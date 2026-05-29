@@ -6,13 +6,23 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
   }
 
   if (command === 'grupos') {
-    let groups = Object.entries(conn.chats || {})
-      .filter(([jid, chat]) => jid.endsWith('@g.us'))
-      .filter(([jid, chat]) => !chat?.read_only)
-      .map(([jid, chat]) => ({
-        jid,
-        name: chat.subject || chat.name || 'Sin nombre'
-      }))
+    let rawGroups = Object.keys(conn.chats || {}).filter(jid => jid.endsWith('@g.us'))
+    let groups = []
+
+    for (let jid of rawGroups) {
+      try {
+        let meta = await conn.groupMetadata(jid)
+        if (!meta || !meta.subject) continue
+
+        groups.push({
+          jid,
+          name: meta.subject
+        })
+      } catch {
+        if (conn.chats && conn.chats[jid]) delete conn.chats[jid]
+        continue
+      }
+    }
 
     if (!groups.length) {
       return conn.reply(m.chat, '⚠️ El bot no está en ningún grupo.', m)
@@ -53,14 +63,14 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
 
     await conn.reply(m.chat, `🚪 Saliendo del grupo:\n\n*${grupo.name}*`, m)
 
-    await conn.groupLeave(grupo.jid)
-
-    // borrar del caché interno del bot
-    if (conn.chats && conn.chats[grupo.jid]) {
-      delete conn.chats[grupo.jid]
+    try {
+      await conn.groupLeave(grupo.jid)
+    } catch (e) {
+      console.log(e)
     }
 
-    // borrar del caché de la lista del owner
+    if (conn.chats && conn.chats[grupo.jid]) delete conn.chats[grupo.jid]
+
     gruposCache[m.sender] = groups.filter(g => g.jid !== grupo.jid)
 
     return conn.reply(m.chat, `✅ El bot salió correctamente de:\n\n*${grupo.name}*`, m)
