@@ -1,46 +1,45 @@
-import fetch from "node-fetch";
+import fetch from 'node-fetch'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) {
     return conn.sendMessage(m.chat, {
-      text: `❗ *Por favor ingresa un prompt para crear la imagen.*\n\n*Ejemplo:* ${usedPrefix}crear carros realistas`,
-    });
+      text: `❗ *Ingresa una descripción para crear la imagen.*\n\n📌 Ejemplo:\n*${usedPrefix + command} un carro deportivo morado, realista, 4k*`
+    }, { quoted: m })
   }
 
-  // Notificar al usuario que se está generando la imagen
   await conn.sendMessage(m.chat, {
-    text: `🔨 *Se está creando tu imagen... Por favor espera...*`,
-  });
+    text: `🎨 *Creando tu imagen...*\n⏳ Espera unos segundos.`
+  }, { quoted: m })
 
   try {
-    // Decodificar la URL de la API desde Base64
-    const encodedApiUrl = "aHR0cHM6Ly9lbGlhc2FyLXl0LWFwaS52ZXJjZWwuYXBwL2FwaS9haS90ZXh0MmltZw==";
-    const apiUrl = `${Buffer.from(encodedApiUrl, "base64").toString()}?prompt=${encodeURIComponent(text)}`;
+    const prompt = encodeURIComponent(text)
+    const seed = Math.floor(Math.random() * 999999)
 
-    // Solicitar la generación de la imagen a la API
-    const response = await fetch(apiUrl);
+    const apiUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1024&height=1024&seed=${seed}&model=flux&enhance=true`
+
+    const response = await fetch(apiUrl)
+
     if (!response.ok) {
-      throw new Error(`Error en la solicitud a la API: ${response.statusText}`);
+      throw new Error(`API respondió con estado: ${response.status}`)
     }
 
-    // Convertir la respuesta a un buffer de imagen
-    const imageBuffer = await response.buffer();
+    const imageBuffer = Buffer.from(await response.arrayBuffer())
 
-    // Enviar la imagen al usuario
     await conn.sendMessage(m.chat, {
       image: imageBuffer,
-      caption: `🖼️ *Aquí está tu imagen:*`,
-    });
+      caption: `🖼️ *Imagen creada con IA*\n\n📝 Prompt: ${text}`
+    }, { quoted: m })
+
   } catch (error) {
-    console.error("Error al generar la imagen:", error);
+    console.error('Error al generar la imagen:', error)
     await conn.sendMessage(m.chat, {
-      text: `❌ *Ocurrió un error al intentar generar la imagen:*\n${error.message || "Error desconocido"}`,
-    });
+      text: `❌ *No pude generar la imagen.*\n\nError: ${error.message}`
+    }, { quoted: m })
   }
-};
+}
 
 handler.help = ['crear']
 handler.tags = ['group']
-handler.command = /^crear$/i;
+handler.command = /^crear$/i
 
-export default handler;
+export default handler
