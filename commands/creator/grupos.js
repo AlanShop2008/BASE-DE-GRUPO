@@ -1,28 +1,35 @@
 let gruposCache = {}
 
+async function getGroups(conn) {
+  let groups = []
+
+  try {
+    groups = await conn.groupFetchAllParticipating()
+    groups = Object.entries(groups).map(([jid, data]) => ({
+      jid,
+      name: data.subject || 'Sin nombre'
+    }))
+  } catch (e) {
+    groups = Object.entries(conn.chats || {})
+      .filter(([jid]) => jid.endsWith('@g.us'))
+      .map(([jid, chat]) => ({
+        jid,
+        name: chat.subject || chat.name || 'Sin nombre'
+      }))
+  }
+
+  groups = groups.filter(g => g.name !== 'Sin nombre')
+
+  return groups
+}
+
 const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
   if (!isOwner && !isROwner) {
     return conn.reply(m.chat, '🚫 Solo el dueño del bot puede usar este comando.', m)
   }
 
   if (command === 'grupos') {
-    let rawGroups = Object.keys(conn.chats || {}).filter(jid => jid.endsWith('@g.us'))
-    let groups = []
-
-    for (let jid of rawGroups) {
-      try {
-        let meta = await conn.groupMetadata(jid)
-        if (!meta || !meta.subject) continue
-
-        groups.push({
-          jid,
-          name: meta.subject
-        })
-      } catch {
-        if (conn.chats && conn.chats[jid]) delete conn.chats[jid]
-        continue
-      }
-    }
+    let groups = await getGroups(conn)
 
     if (!groups.length) {
       return conn.reply(m.chat, '⚠️ El bot no está en ningún grupo.', m)
@@ -49,12 +56,7 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
       return conn.reply(m.chat, '⚠️ Usa el número del grupo.\n\nEjemplo: *.exit 1*', m)
     }
 
-    let groups = gruposCache[m.sender]
-
-    if (!groups || !groups.length) {
-      return conn.reply(m.chat, '⚠️ Primero usa *.grupos* para generar la lista.', m)
-    }
-
+    let groups = gruposCache[m.sender] || await getGroups(conn)
     let grupo = groups[num - 1]
 
     if (!grupo) {
@@ -63,13 +65,11 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
 
     await conn.reply(m.chat, `🚪 Saliendo del grupo:\n\n*${grupo.name}*`, m)
 
-    try {
-      await conn.groupLeave(grupo.jid)
-    } catch (e) {
-      console.log(e)
-    }
+    await conn.groupLeave(grupo.jid)
 
-    if (conn.chats && conn.chats[grupo.jid]) delete conn.chats[grupo.jid]
+    if (conn.chats?.[grupo.jid]) delete conn.chats[grupo.jid]
+    if (conn.store?.chats?.delete) conn.store.chats.delete(grupo.jid)
+    if (conn.ev?.emit) conn.ev.emit('chats.delete', [grupo.jid])
 
     gruposCache[m.sender] = groups.filter(g => g.jid !== grupo.jid)
 
