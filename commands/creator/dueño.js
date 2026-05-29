@@ -1,23 +1,25 @@
 const handler = async (m, { conn }) => {
-  const number = '525637362813'
-  const name = '🔥Alan Shop🔥'
+  const number = '525637362813' // 52 + tu número de 10 dígitos
+  const name = 'Alan Shop'
 
-  const vcard = `
-BEGIN:VCARD
+  const jid = number + '@s.whatsapp.net'
+
+  const vcard = `BEGIN:VCARD
 VERSION:3.0
-N:;${name};;;
+N:${name};;;;
 FN:${name}
-ORG:${name}
-TEL;type=CELL;type=VOICE;waid=${number}:+${number}
-END:VCARD
-`.trim()
+TEL;waid=${number}:${number}
+END:VCARD`
 
   await m.react('👑')
 
   await conn.sendMessage(m.chat, {
     contacts: {
       displayName: name,
-      contacts: [{ vcard }]
+      contacts: [{
+        displayName: name,
+        vcard: vcard
+      }]
     }
   }, { quoted: m })
 }
