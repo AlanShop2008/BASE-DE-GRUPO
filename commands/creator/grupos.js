@@ -1,15 +1,41 @@
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const salidosPath = path.join(__dirname, 'grupos_salidos.json')
+
+if (!fs.existsSync(salidosPath)) fs.writeFileSync(salidosPath, '[]')
+
 let gruposCache = {}
+
+function leerSalidos() {
+  try {
+    return JSON.parse(fs.readFileSync(salidosPath))
+  } catch {
+    return []
+  }
+}
+
+function guardarSalido(jid) {
+  let salidos = leerSalidos()
+  if (!salidos.includes(jid)) salidos.push(jid)
+  fs.writeFileSync(salidosPath, JSON.stringify(salidos, null, 2))
+}
 
 async function getGroups(conn) {
   let groups = []
+  let salidos = leerSalidos()
 
   try {
-    groups = await conn.groupFetchAllParticipating()
-    groups = Object.entries(groups).map(([jid, data]) => ({
+    let data = await conn.groupFetchAllParticipating()
+    groups = Object.entries(data).map(([jid, group]) => ({
       jid,
-      name: data.subject || 'Sin nombre'
+      name: group.subject || 'Sin nombre'
     }))
-  } catch (e) {
+  } catch {
     groups = Object.entries(conn.chats || {})
       .filter(([jid]) => jid.endsWith('@g.us'))
       .map(([jid, chat]) => ({
@@ -18,9 +44,9 @@ async function getGroups(conn) {
       }))
   }
 
-  groups = groups.filter(g => g.name !== 'Sin nombre')
-
   return groups
+    .filter(g => !salidos.includes(g.jid))
+    .filter(g => g.name && g.name !== 'Sin nombre')
 }
 
 const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
@@ -65,11 +91,16 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
 
     await conn.reply(m.chat, `🚪 Saliendo del grupo:\n\n*${grupo.name}*`, m)
 
-    await conn.groupLeave(grupo.jid)
+    try {
+      await conn.groupLeave(grupo.jid)
+    } catch (e) {
+      console.log(e)
+    }
+
+    guardarSalido(grupo.jid)
 
     if (conn.chats?.[grupo.jid]) delete conn.chats[grupo.jid]
     if (conn.store?.chats?.delete) conn.store.chats.delete(grupo.jid)
-    if (conn.ev?.emit) conn.ev.emit('chats.delete', [grupo.jid])
 
     gruposCache[m.sender] = groups.filter(g => g.jid !== grupo.jid)
 
