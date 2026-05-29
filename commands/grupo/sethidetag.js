@@ -1,20 +1,27 @@
-let handler = async (m, { conn, text }) => {
-  
-  const chat = global.db.data.chats[m.chat] || {}
-  const input = (text || '').trim().toLowerCase()
+let handler = async (m, { text, usedPrefix, command }) => {
+  if (!global.db.data.chats) global.db.data.chats = {}
+  if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
 
-  if (['off', 'delete', 'remove', 'none', 'reset'].includes(input)) {
-    delete chat.customTextH
-    return m.reply('🍃 El texto personalizado del hidetag fue eliminado. Ahora se usará el texto por defecto.')
+  const chat = global.db.data.chats[m.chat]
+  const input = (text || '').trim()
+
+  if (!input) {
+    return m.reply(`🍃 Usa así:\n\n${usedPrefix + command} ROKO-BOT\n\nPara quitarlo:\n${usedPrefix + command} off`)
   }
 
-  chat.customTextH = text.trim()
-  m.reply(`🍃 El texto del hidetag ha sido actualizado correctamente a:\n"${text.trim()}"`)
+  if (['off', 'reset', 'delete', 'remove', 'none'].includes(input.toLowerCase())) {
+    delete chat.customFooter
+    return m.reply('🍃 Footer personalizado eliminado. Ahora se usará el nombre normal del bot.')
+  }
+
+  chat.customFooter = input
+
+  m.reply(`✅ Footer personalizado actualizado:\n\n${input}`)
 }
 
-handler.help = ['sethidetag <texto|off>']
+handler.help = ['setn <texto|off>']
 handler.tags = ['group']
-handler.command = ['sethidetag', 'setn']
+handler.command = /^(setn|setfooter|setfirma)$/i
 handler.admin = true
 handler.group = true
 
