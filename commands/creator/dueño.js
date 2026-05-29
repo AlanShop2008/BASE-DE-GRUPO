@@ -1,13 +1,14 @@
 const handler = async (m, { conn }) => {
-  const number = '5637362813'
-  const name = 'Alan Shop'
+  const number = '+525637362813'
+  const name = '🔥Alan Shop🔥'
 
   const vcard = `
 BEGIN:VCARD
 VERSION:3.0
+N:;${name};;;
 FN:${name}
 ORG:${name}
-TEL;type=CELL;type=VOICE;waid=52${number}:+52 ${number}
+TEL;type=CELL;type=VOICE;waid=${number}:+${number}
 END:VCARD
 `.trim()
 
