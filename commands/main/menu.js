@@ -1,36 +1,31 @@
-import ws from 'ws'
-import { generateWAMessageFromContent, prepareWAMessageMedia } from '@whiskeysockets/baileys'
 import fs from 'fs'
 import fetch from 'node-fetch'
 
-const botname = global.botname 
+const botname = global.botname || 'Alan Dev'
 
 let tags = {
-  'main': 'INFO 📚',
-  'search': 'BUSQUEDA 🔎',
+  'main': 'PRINCIPAL 👑',
   'group': 'GRUPOS 👥',
-  'freefire': 'FREE FIRE 📌',
-  'rpg': 'RPG 🌠',
-  'rg': 'REGISTRO 📁',
+  'freefire': 'FREE FIRE 🎮',
   'sticker': 'STICKERS 🏞',
-  'img': 'IMAGENES 📸',
-  'nable': 'ON / OFF 📴', 
   'downloader': 'DESCARGAS 📥',
   'tools': 'HERRAMIENTAS 🔧',
-  'nsfw': 'NSFW 🔞', 
+  'search': 'BÚSQUEDA 🔎',
+  'rpg': 'RPG 🌠',
+  'rg': 'REGISTRO 📁',
+  'img': 'IMÁGENES 📸',
+  'nable': 'ON / OFF 📴',
   'anime': 'ANIME 👑',
+  'nsfw': 'NSFW 🔞'
 }
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-  let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
-  let name = await conn.getName(userId);
+    let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender
+    let name = await conn.getName(userId)
 
     if (!global.db.data.users) global.db.data.users = {}
-    let user = global.db.data.users[userId] || { exp: 0, premium: false }
-
-    let totalUsers = Object.values(global.db.data.users).filter(u => u.exp > 0).length
-    let totalPremium = Object.values(global.db.data.users).filter(u => u.premium).length
+    if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
 
     let help = Object.values(global.plugins)
       .filter(plugin => !plugin.disabled)
@@ -40,23 +35,30 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
         limit: plugin.limit,
         premium: plugin.premium,
       }))
-    let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
-    let uptime = Object.values(process.uptime() * 1000)
-    const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
-    let emojiM = global.db.data.chats[m.chat].customEmojiM || '🩵'
 
-    let menuText = `_*¡𝐇𝐨𝐥𝐚 𝐁𝐢𝐞𝐧𝐯𝐞𝐧𝐢𝐝@ ${name} 𝐄𝐬𝐩𝐞𝐫𝐨 𝐲 𝐭𝐞𝐧𝐠𝐚𝐬 𝐮𝐧 𝐠𝐫𝐚𝐧 𝐝𝐢𝐚 ☀️!*_
+    let totalCommands = help.reduce((acc, plugin) => acc + plugin.help.length, 0)
 
-┌────── •• ──────┐
-    「 _*𝐈𝐍𝐅𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓*_ 」
-└────── •• ──────┘
-┃ 💙 _𝖬𝐨𝐝𝐨_ : 𝐏𝐑𝐈𝐕𝐀𝐃𝐎
-┃ 💙 _𝐅𝐞𝐜𝐡𝐚_ : ${fecha}
-┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚𝐥_ : ${totalCommands}
-┃ 💙 _𝖢𝖱𝖤𝖠𝖣𝖮𝖱_ : *𝐀𝐋𝐀𝐍 𝐒𝐇𝐎𝐏*
-━━━━━━━━━━━━━━━
+    const fecha = new Date().toLocaleDateString('es-ES', {
+      timeZone: 'America/Mexico_City',
+      day: 'numeric',
+      month: 'long'
+    })
 
-_*L I S T A - D E - C O M A N D O S*_
+    let emojiM = global.db.data.chats[m.chat].customEmojiM || '👑'
+
+    let menuText = `
+» 👋🏻 𝖻𝗂𝖾𝗇𝗏𝖾𝗇𝗂𝖽𝗈 𝖺𝗅 𝗆𝖾𝗇𝗎 𝗉𝗋𝗂𝗇𝖼𝗂𝗉𝖺𝗅 𝖽𝖾 *† ${botname}*  
+𝖺𝗊𝗎𝗂́ 𝖾𝗇𝖼𝗈𝗇𝗍𝗋𝖺𝗋𝖺́𝗌 𝗅𝗈𝗌 𝖼𝗈𝗆𝖺𝗇𝖽𝗈𝗌 𝗉𝖺𝗋𝖺 𝗆𝖺𝗇𝗍𝖾𝗇𝖾𝗋 𝗎𝗇 𝗍𝗈𝗍𝖺𝗅 𝗈𝗋𝖽𝖾𝗇 𝖾𝗇 𝗍𝗎𝗌 𝗀𝗋𝗎𝗉𝗈𝗌.
+
+*╭┈┈⊰* 👑 \`INFO DEL BOT\` 👑
+*┊* 👤 𝗨𝘀𝘂𝗮𝗿𝗶𝗼: *${name}*
+*┊* 📅 𝗙𝗲𝗰𝗵𝗮: *${fecha}*
+*┊* ⚡ 𝗖𝗼𝗺𝗮𝗻𝗱𝗼𝘀: *${totalCommands}*
+*┊* 🔥 𝗘𝘀𝘁𝗮𝗱𝗼: *Online*
+*┊* 👑 𝗖𝗿𝗲𝗮𝗱𝗼𝗿: *ALAN SHOP*
+*╰┈┈┈┈┈┈┈┈┈⊰*
+
+\`\`\`Selecciona una categoría y usa los comandos según tus necesidades.\`\`\`
 `
 
     for (let tag in tags) {
@@ -64,43 +66,55 @@ _*L I S T A - D E - C O M A N D O S*_
       if (!comandos.length) continue
 
       menuText += `
-╭──「 ${tags[tag]} 」──
+─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+*╭┈┈⊰* ${emojiM} \`${tags[tag]}\` ${emojiM}
 ${comandos.map(menu =>
   menu.help.map(help =>
-    `┃ ${emojiM} ${_p}${help}${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
+    `*┊* ${emojiM} *${_p}${help}*${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
   ).join('\n')
 ).join('\n')}
-╰━━━━━━━━━━━⬣
+*╰┈┈┈┈┈┈┈┈┈⊰*
 `
     }
 
+    menuText += `
+\`\`\`✨ ${botname} | Sistema premium para grupos y ventas.✨\`\`\`
+`
+
     await m.react('⚡️')
 
-   let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
-    
-let groupName = await conn.getName(m.chat)
-let ppUrl
-try {
-  ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-} catch {
-  ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
-}
+    let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
 
-const fgrupo = {
-  key: {
-    fromMe: false,
-    participant: "0@s.whatsapp.net",
-    remoteJid: "status@broadcast",
-    id: "Undefined"
-  },
-  message: {
-    locationMessage: {
-      name: groupName, 
-      jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+    let groupName = await conn.getName(m.chat)
+    let ppUrl
+    let thumbnail = null
+
+    try {
+      ppUrl = await conn.profilePictureUrl(m.chat, 'image')
+      thumbnail = Buffer.from(await (await fetch(ppUrl)).arrayBuffer())
+    } catch {
+      thumbnail = fs.existsSync('./storage/img/catalogo.png')
+        ? fs.readFileSync('./storage/img/catalogo.png')
+        : null
     }
-  }
-};
-   await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo, m, fake)
+
+    const fgrupo = {
+      key: {
+        fromMe: false,
+        participant: '0@s.whatsapp.net',
+        remoteJid: 'status@broadcast',
+        id: 'AlanDevMenu'
+      },
+      message: {
+        locationMessage: {
+          name: groupName,
+          jpegThumbnail: thumbnail
+        }
+      }
+    }
+
+    await conn.sendFile(m.chat, pp, 'catalogo.png', menuText, fgrupo)
+
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
     console.error(e)
@@ -112,27 +126,3 @@ handler.tags = ['main']
 handler.command = ['menu', 'allmenu', 'menú']
 
 export default handler
-
-function clockString(ms) {
-  let h = Math.floor(ms / 3600000)
-  let m = Math.floor(ms / 60000) % 60
-  let s = Math.floor(ms / 1000) % 60
-  return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
-}
-
-function getSaludo() {
-  let options = {
-    timeZone: "America/Marigot",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: false
-  }
-
-  let horaStr = new Date().toLocaleString("es-DO", options)
-  let [hora] = horaStr.split(":").map(n => parseInt(n))
-
-  if (hora >= 5 && hora < 12) return `🌅 Buenos días | 🕒 ${horaStr}`
-  if (hora >= 12 && hora < 18) return `☀️ Buenas tardes | 🕒 ${horaStr}`
-  return `🌙 Buenas noches | 🕒 ${horaStr}`
-}
