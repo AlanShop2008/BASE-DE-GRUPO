@@ -10,7 +10,27 @@ FN:${name}
 TEL;type=CELL;type=VOICE;waid=${number}:+${number}
 END:VCARD`
 
-  await m.react('👑')
+  const encabezado = {
+    key: {
+      fromMe: false,
+      participant: "0@s.whatsapp.net",
+      remoteJid: "status@broadcast",
+      id: "AlanDev"
+    },
+    message: {
+      contactMessage: {
+        displayName: "Alan Dev",
+        vcard: `BEGIN:VCARD
+VERSION:3.0
+FN:Alan Dev
+ORG:Tienda Oficial
+END:VCARD`,
+        jpegThumbnail: fs.readFileSync('./storage/img/catalogo.png')
+      }
+    }
+  }
+
+  await m.react('🌸')
 
   await conn.sendMessage(m.chat, {
     contacts: {
@@ -19,18 +39,8 @@ END:VCARD`
         displayName: name,
         vcard
       }]
-    },
-    contextInfo: {
-      externalAdReply: {
-        title: 'Alan Dev',
-        body: 'Contacto oficial del bot',
-        thumbnail: fs.readFileSync('./storage/img/catalogo.png'),
-        mediaType: 1,
-        renderLargerThumbnail: false,
-        showAdAttribution: false
-      }
     }
-  }, { quoted: m })
+  }, { quoted: encabezado })
 }
 
 handler.help = ['dueño']
