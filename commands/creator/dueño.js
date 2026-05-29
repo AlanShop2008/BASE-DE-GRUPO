@@ -1,5 +1,5 @@
 const handler = async (m, { conn }) => {
-  const number = '+525637362813'
+  const number = '525637362813'
   const name = '🔥Alan Shop🔥'
 
   const vcard = `
