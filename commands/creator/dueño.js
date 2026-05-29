@@ -4,7 +4,7 @@ const handler = async (m, { conn }) => {
   const botname = global.botname || 'Bot WhatsApp'
 
   const texto = `
-╭──「 👑 𝐃𝐔𝐄𝐍̃𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓 」──
+╭──「 👑 𝐃𝐔𝐄𝐍̃𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓 」
 ┃
 ┃ 👤 𝐍𝐨𝐦𝐛𝐫𝐞: *${name}*
 ┃ 📱 𝐍𝐮́𝐦𝐞𝐫𝐨: wa.me/${number}
