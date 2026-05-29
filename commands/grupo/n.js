@@ -1,47 +1,105 @@
 const handler = async (m, { conn, text, participants }) => {
-  const mentions = participants.map(p => p.id)
 
-  // Si respondes a un mensaje viejo con .n
+  const mentions = participants.map(
+    p => conn.decodeJid(p.id)
+  )
+
+  // 📢 Responder a un mensaje
   if (m.quoted) {
-    try {
-      let q = m.quoted
 
-      // Reenviar el mensaje citado tal cual
-      await conn.copyNForward(
+    const quoted = m.quoted
+
+    const quotedText =
+      quoted.text ||
+      quoted.caption ||
+      ''
+
+    // Imagen
+    if (quoted.mtype === 'imageMessage') {
+
+      const media =
+        await quoted.download?.()
+
+      return conn.sendMessage(
         m.chat,
-        q.fakeObj || q,
-        true,
         {
-          contextInfo: {
-            mentionedJid: mentions
-          }
-        }
+          image: media,
+          caption: quotedText,
+          mentions
+        },
+        { quoted: m }
       )
 
-      return
-    } catch (e) {
-      console.error(e)
-
-      // Si copyNForward falla, intenta reenviar texto citado
-      let quotedText = m.quoted.text || m.quoted.caption || ''
-
-      if (quotedText) {
-        return conn.sendMessage(
-          m.chat,
-          {
-            text: quotedText,
-            mentions
-          },
-          { quoted: m }
-        )
-      }
-
-      return conn.reply(m.chat, '❌ No pude reenviar ese mensaje.', m)
     }
+
+    // Video
+    if (quoted.mtype === 'videoMessage') {
+
+      const media =
+        await quoted.download?.()
+
+      return conn.sendMessage(
+        m.chat,
+        {
+          video: media,
+          caption: quotedText,
+          mentions
+        },
+        { quoted: m }
+      )
+
+    }
+
+    // Audio
+    if (quoted.mtype === 'audioMessage') {
+
+      const media =
+        await quoted.download?.()
+
+      return conn.sendMessage(
+        m.chat,
+        {
+          audio: media,
+          mimetype: 'audio/mp4',
+          mentions
+        },
+        { quoted: m }
+      )
+
+    }
+
+    // Sticker
+    if (quoted.mtype === 'stickerMessage') {
+
+      const media =
+        await quoted.download?.()
+
+      return conn.sendMessage(
+        m.chat,
+        {
+          sticker: media,
+          mentions
+        },
+        { quoted: m }
+      )
+
+    }
+
+    // Texto
+    return conn.sendMessage(
+      m.chat,
+      {
+        text: quotedText,
+        mentions
+      },
+      { quoted: m }
+    )
+
   }
 
-  // Si usas .n texto
+  // 📢 .n texto
   if (text) {
+
     return conn.sendMessage(
       m.chat,
       {
@@ -50,13 +108,21 @@ const handler = async (m, { conn, text, participants }) => {
       },
       { quoted: m }
     )
+
   }
 
   return conn.reply(
     m.chat,
-    `⚠️ Uso correcto:\n\n.n texto\n\nO responde a un mensaje pasado con:\n.n`,
+    `⚠️ Uso correcto:
+
+.n texto
+
+o responde a cualquier mensaje con:
+
+.n`,
     m
   )
+
 }
 
 handler.help = ['n <texto>']
