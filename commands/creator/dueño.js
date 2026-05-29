@@ -1,3 +1,5 @@
+import fs from 'fs'
+
 const handler = async (m, { conn }) => {
   const number = '5215637362813'
   const name = 'Alan Shop'
@@ -8,7 +10,7 @@ FN:${name}
 TEL;type=CELL;type=VOICE;waid=${number}:+${number}
 END:VCARD`
 
-  await m.react('🫶')
+  await m.react('👑')
 
   await conn.sendMessage(m.chat, {
     contacts: {
@@ -17,6 +19,16 @@ END:VCARD`
         displayName: name,
         vcard
       }]
+    },
+    contextInfo: {
+      externalAdReply: {
+        title: 'Alan Dev',
+        body: 'Contacto oficial del bot',
+        thumbnail: fs.readFileSync('./storage/img/catalogo.png'),
+        mediaType: 1,
+        renderLargerThumbnail: false,
+        showAdAttribution: false
+      }
     }
   }, { quoted: m })
 }
