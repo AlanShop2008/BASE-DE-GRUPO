@@ -1,10 +1,22 @@
-let handler = async (m, { conn }) => {
-  if (!m.fromMe) return m.reply('⚠️ Solo el creador puede usar este comando')
+// resetventas.js
 
-  global.db.data.ventas = { total: 0, historial: [] }
-  conn.reply(m.chat, '♻️ Historial y total de ventas reiniciado', m)
+let handler = async (m, { conn }) => {
+
+global.db.data.ventas = {
+total: 0,
+historial: []
 }
 
-handler.command = ['resetventas']
+conn.reply(m.chat, `
+♻️ Sistema reiniciado
+
+🗑️ Ventas eliminadas
+💰 Total reiniciado a $0
+`, m)
+
+}
+
+handler.command = ['resetventas', 'borrarventas']
 handler.owner = true
+
 export default handler
