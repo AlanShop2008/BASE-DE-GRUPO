@@ -1,8 +1,6 @@
-let handler = async (m, { conn }) => {
+// totalvendido.js
 
-if (!m.fromMe) {
-return m.reply('⚠️ Solo el creador puede usar este comando')
-}
+let handler = async (m, { conn }) => {
 
 if (!global.db.data.ventas) {
 global.db.data.ventas = {
