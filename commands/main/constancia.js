@@ -1,6 +1,5 @@
 ```js
 import fs from 'fs'
-import path from 'path'
 
 let handler = async (m, { args, conn }) => {
 
@@ -11,53 +10,45 @@ let handler = async (m, { args, conn }) => {
   let rfc = args[0]
   let idcif = args[1]
 
-  await m.reply('🔄 Generando constancia PDF...')
-
   try {
 
-    // Contenido PDF falso de prueba
+    if (!fs.existsSync('./tmp')) {
+      fs.mkdirSync('./tmp')
+    }
+
+    const filename = `./tmp/${rfc}.txt`
+
     const contenido = `
-CONSTANCIA DE SITUACIÓN FISCAL
+CONSTANCIA DE SITUACION FISCAL
 
 RFC: ${rfc}
 
 IDCIF: ${idcif}
 
-Fecha: ${new Date().toLocaleDateString()}
+FECHA: ${new Date().toLocaleDateString()}
 
-Documento generado desde tu bot.
+DOCUMENTO GENERADO POR EL BOT
 `
 
-    // Ruta temporal
-    const filePath = path.join('./tmp', `${rfc}.pdf`)
+    fs.writeFileSync(filename, contenido)
 
-    // Crear carpeta tmp si no existe
-    if (!fs.existsSync('./tmp')) {
-      fs.mkdirSync('./tmp')
-    }
-
-    // Crear archivo PDF falso
-    fs.writeFileSync(filePath, contenido)
-
-    // Enviar archivo
     await conn.sendMessage(
       m.chat,
       {
-        document: fs.readFileSync(filePath),
-        mimetype: 'application/pdf',
-        fileName: `Constancia_${rfc}.pdf`
+        document: fs.readFileSync(filename),
+        mimetype: 'text/plain',
+        fileName: `Constancia_${rfc}.txt`
       },
       { quoted: m }
     )
 
-    // Borrar archivo temporal
-    fs.unlinkSync(filePath)
+    fs.unlinkSync(filename)
 
   } catch (e) {
 
     console.log(e)
 
-    await m.reply('❌ Error generando PDF')
+    m.reply('Error')
 
   }
 
