@@ -70,9 +70,87 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
       return `*${i + 1}.* ${g.name}\n🆔 ${g.jid}`
     }).join('\n\n')
 
-    texto += `\n\nPara salir de un grupo usa:\n*.exit número*\n\nEjemplo:\n*.exit 1*`
+    texto += `\n\n📤 *Para enviar aviso a un grupo usa:*\n`
+    texto += `*.enviaraviso número mensaje*\n\n`
+    texto += `Ejemplo:\n`
+    texto += `*.enviaraviso 1 Buenas tardes, este es un aviso importante.*\n\n`
+
+    texto += `🚪 *Para salir de un grupo usa:*\n`
+    texto += `*.exit número*\n\n`
+    texto += `Ejemplo:\n`
+    texto += `*.exit 1*`
 
     return conn.reply(m.chat, texto, m)
+  }
+
+  if (command === 'enviaraviso') {
+    if (!text) {
+      return conn.reply(
+        m.chat,
+        `⚠️ Usa el número del grupo y el mensaje.\n\n` +
+        `Ejemplo:\n` +
+        `*.enviaraviso 1 Buenas tardes, este es un aviso importante.*`,
+        m
+      )
+    }
+
+    let args = text.trim().split(' ')
+    let num = parseInt(args[0])
+    let aviso = args.slice(1).join(' ').trim()
+
+    if (!num || isNaN(num)) {
+      return conn.reply(
+        m.chat,
+        `⚠️ Debes poner el número del grupo.\n\n` +
+        `Ejemplo:\n` +
+        `*.enviaraviso 1 Buenas tardes grupo.*`,
+        m
+      )
+    }
+
+    if (!aviso) {
+      return conn.reply(
+        m.chat,
+        `⚠️ Debes escribir el aviso después del número.\n\n` +
+        `Ejemplo:\n` +
+        `*.enviaraviso 1 Buenas tardes grupo.*`,
+        m
+      )
+    }
+
+    let groups = gruposCache[m.sender] || await getGroups(conn)
+    let grupo = groups[num - 1]
+
+    if (!grupo) {
+      return conn.reply(
+        m.chat,
+        `❌ Ese número no existe en la lista.\n\n` +
+        `Usa *.grupos* para ver la lista correcta.`,
+        m
+      )
+    }
+
+    try {
+      await conn.sendMessage(grupo.jid, {
+        text: `📢 *AVISO IMPORTANTE*\n\n${aviso}`
+      })
+
+      return conn.reply(
+        m.chat,
+        `✅ *Aviso enviado correctamente*\n\n` +
+        `📌 Grupo: *${grupo.name}*\n` +
+        `🔢 Número: *${num}*\n\n` +
+        `📝 Mensaje:\n${aviso}`,
+        m
+      )
+    } catch (e) {
+      console.log(e)
+      return conn.reply(
+        m.chat,
+        `❌ No se pudo enviar el aviso al grupo:\n\n*${grupo.name}*`,
+        m
+      )
+    }
   }
 
   if (command === 'exit') {
@@ -108,9 +186,9 @@ const handler = async (m, { conn, command, text, isOwner, isROwner }) => {
   }
 }
 
-handler.help = ['grupos', 'exit']
+handler.help = ['grupos', 'exit', 'enviaraviso']
 handler.tags = ['creator']
-handler.command = /^(grupos|exit)$/i
+handler.command = /^(grupos|exit|enviaraviso)$/i
 handler.owner = true
 
 export default handler
