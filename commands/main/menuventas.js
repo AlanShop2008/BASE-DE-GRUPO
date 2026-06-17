@@ -70,13 +70,6 @@ ${saludo}
        *MENU DE VENTAS*
 ╰───────••───────╯
 
-👤 *Usuario:* ${await conn.getName(userId)}
-👑 *Premium:* ${user.premium ? 'Sí' : 'No'}
-👥 *Usuarios:* ${totalUsers}
-💎 *Premiums:* ${totalPremium}
-⚡ *Modo:* ${modo}
-⏱️ *Runtime:* ${uptime}
-
 ━━━━━━━━━━━━━━━━━━━━
 
 📌 *Cómo crear tus propios comandos*
@@ -102,27 +95,6 @@ de comandos creados.
 *${_p}promo*
 
 👉 El bot mostrará automáticamente tu promoción.
-
-━━━━━━━━━━━━━━━━━━━━
-`.trim()
-
-    for (let tag in tags) {
-      let comandos = help.filter(menu => menu.tags.includes(tag))
-      if (!comandos.length) continue
-
-      menuText += `
-
-╭┈┈⊰ 🛒 *${tags[tag]}* 🛒
-${comandos.map(menu =>
-  menu.help.map(help =>
-    `┊ 🔹 ${_p}${help}${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
-  ).join('\n')
-).join('\n')}
-╰┈┈┈┈┈┈┈┈┈⊰
-`
-    }
-
-    menuText += `
 
 ━━━━━━━━━━━━━━━━━━━━
 
