@@ -254,13 +254,6 @@ También puedes responder a una imagen con:
 📂 *Grupo:* ${groupName}
 📌 *Comando:* ${usedPrefix}${name}
 
-Ahora este comando solo funcionará en este grupo.
-
-Para verlo en la lista usa:
-*${usedPrefix}menuventas*`,
-    m
-  )
-}
 
 async function sendCustomCommand(m, conn, cmd) {
   if (cmd.type === 'image' && cmd.mediaPath && fs.existsSync(cmd.mediaPath)) {
