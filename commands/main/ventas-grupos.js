@@ -402,14 +402,10 @@ y su propia lista de comandos.
 
 ━━━━━━━━━━━━━━━━━━━━
 
-${comandosCreados}
-
-━━━━━━━━━━━━━━━━━━━━
-
 ╭───────────────⊰ 🔥
 │ ⚡ *${botname}*
-│ 👑 Sistema Premium
-│ 🛡️ Ventas • Servicios • Bot
+│ 👑 Alan Shop Dev
+│ 🛡️ 56 3736 2813
 ╰───────────────⊰ 🔥
 `.trim()
 
