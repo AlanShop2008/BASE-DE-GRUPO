@@ -1,5 +1,6 @@
 import fs from 'fs'
 import fetch from 'node-fetch'
+import { sendMenuConBanner } from '../lib/menuBanner.js'
 
 const botname = global.botname || 'Alan Dev'
 
@@ -17,7 +18,6 @@ let tags = {
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-
     let userId = m.mentionedJid?.[0] || m.sender
     let name = await conn.getName(userId)
 
@@ -63,7 +63,6 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 `.trim()
 
     for (let tag in tags) {
-
       let comandos = help
         .filter(menu => menu.tags.includes(tag))
         .flatMap(menu =>
@@ -93,27 +92,17 @@ ${comandos.map(menu =>
 
     await m.react('🔥')
 
-    let pp = global.db.data.chats[m.chat].customPhotoM
-      || './storage/img/catalogo.png'
-
     let groupName = await conn.getName(m.chat)
-
     let thumbnail = null
 
     try {
-
       let ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-
       const response = await fetch(ppUrl)
-
       thumbnail = Buffer.from(await response.arrayBuffer())
-
     } catch {
-
       if (fs.existsSync('./storage/img/catalogo.png')) {
         thumbnail = fs.readFileSync('./storage/img/catalogo.png')
       }
-
     }
 
     const fgrupo = {
@@ -131,21 +120,14 @@ ${comandos.map(menu =>
       }
     }
 
-    await conn.sendFile(
-      m.chat,
-      pp,
-      'menu.jpg',
-      menuText,
-      fgrupo
-    )
+    await sendMenuConBanner(conn, m, menuText, fgrupo)
 
   } catch (e) {
-
     console.error(e)
 
     conn.reply(
       m.chat,
-      `✖️ Error al mostrar el menú.\n\n${e}`,
+      `✖️ Error al mostrar el menú.\n\n${e.message || e}`,
       m
     )
   }
@@ -158,12 +140,11 @@ handler.command = ['menu', 'allmenu', 'menú']
 export default handler
 
 function clockString(ms) {
-
   let h = Math.floor(ms / 3600000)
   let m = Math.floor(ms / 60000) % 60
   let s = Math.floor(ms / 1000) % 60
 
   return [h, m, s]
-    .map(v => v.toString().padStart(2, 0))
+    .map(v => v.toString().padStart(2, '0'))
     .join(':')
 }
