@@ -10,6 +10,8 @@ const INDEX_FILE = path.join(ROOT, '_index.json')
 if (!fs.existsSync(ROOT)) fs.mkdirSync(ROOT, { recursive: true })
 if (!fs.existsSync(INDEX_FILE)) fs.writeFileSync(INDEX_FILE, JSON.stringify({}, null, 2))
 
+if (!global.ventasReplyLock) global.ventasReplyLock = new Map()
+
 function readJson(file, fallback = {}) {
   try {
     if (!fs.existsSync(file)) return fallback
@@ -71,12 +73,31 @@ function getMediaType(mimetype = '') {
   return 'text'
 }
 
+function isLocked(chat, sender, command) {
+  const key = `${chat}:${sender}:${command}`
+  const now = Date.now()
+  const last = global.ventasReplyLock.get(key)
+
+  if (last && now - last < 4000) return true
+
+  global.ventasReplyLock.set(key, now)
+
+  setTimeout(() => {
+    if (global.ventasReplyLock.get(key) === now) {
+      global.ventasReplyLock.delete(key)
+    }
+  }, 4500)
+
+  return false
+}
+
 async function getGroupFolder(conn, chat) {
   let index = readJson(INDEX_FILE, {})
   let jidKey = chat.replace(/[^\w]/g, '_')
 
   if (index[chat]?.folder) {
     let folder = path.join(ROOT, index[chat].folder)
+
     if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true })
     if (!fs.existsSync(path.join(folder, 'media'))) fs.mkdirSync(path.join(folder, 'media'), { recursive: true })
     if (!fs.existsSync(path.join(folder, 'comandos.json'))) saveJson(path.join(folder, 'comandos.json'), {})
@@ -455,12 +476,12 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
 handler.before = async (m, { conn, usedPrefix }) => {
   try {
-    if (!m.isGroup) return
+    if (!m.isGroup) return false
 
     let body = getBody(m)
     usedPrefix = usedPrefix || '.'
 
-    if (!body.startsWith(usedPrefix)) return
+    if (!body.startsWith(usedPrefix)) return false
 
     let commandName = body
       .slice(usedPrefix.length)
@@ -468,24 +489,29 @@ handler.before = async (m, { conn, usedPrefix }) => {
       .split(/\s+/)[0]
       .toLowerCase()
 
-    if (!commandName) return
+    if (!commandName) return false
 
     if (
       commandName.startsWith('set') ||
       ['menuventas', 'menuv', 'menúv'].includes(commandName)
-    ) return
+    ) return false
+
+    if (isLocked(m.chat, m.sender, commandName)) {
+      return true
+    }
 
     let commandsFile = await getCommandsFile(conn, m.chat)
     let comandos = readJson(commandsFile, {})
     let cmd = comandos[commandName]
 
-    if (!cmd) return
+    if (!cmd) return false
 
     await sendCustomCommand(m, conn, cmd)
     return true
 
   } catch (e) {
     console.error(e)
+    return false
   }
 }
 
