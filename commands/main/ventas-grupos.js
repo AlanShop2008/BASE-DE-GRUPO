@@ -7,6 +7,9 @@ const botname = global.botname || 'Alan Dev'
 const ROOT = path.join(process.cwd(), 'database', 'ventas_grupos')
 const INDEX_FILE = path.join(ROOT, '_index.json')
 
+const BANNER_DIR = path.join(process.cwd(), 'storage', 'menu_banner')
+const BANNER_CONFIG = path.join(BANNER_DIR, 'banner.json')
+
 if (!fs.existsSync(ROOT)) fs.mkdirSync(ROOT, { recursive: true })
 if (!fs.existsSync(INDEX_FILE)) fs.writeFileSync(INDEX_FILE, JSON.stringify({}, null, 2))
 
@@ -182,7 +185,18 @@ También puedes responder a una imagen con:
     )
   }
 
-  let blocked = ['set', 'menuventas', 'menuv', 'menúv']
+  let blocked = [
+    'set',
+    'menu',
+    'menuventas',
+    'menuv',
+    'menúv',
+    'setbanner',
+    'setbannergif',
+    'setbannervideo',
+    'setanner'
+  ]
+
   if (blocked.includes(name)) {
     return conn.reply(m.chat, `> ⚠ Ese nombre no se puede usar para un comando.`, m)
   }
@@ -247,13 +261,20 @@ También puedes responder a una imagen con:
 
   let groupName = await conn.getName(m.chat).catch(() => 'este grupo')
 
-  await conn.reply(
+  return conn.reply(
     m.chat,
     `> ✅ Comando guardado correctamente.
 
 📂 *Grupo:* ${groupName}
 📌 *Comando:* ${usedPrefix}${name}
 
+Ahora este comando solo funcionará en este grupo.
+
+Para verlo en la lista usa:
+*${usedPrefix}menuventas*`,
+    m
+  )
+}
 
 async function sendCustomCommand(m, conn, cmd) {
   if (cmd.type === 'image' && cmd.mediaPath && fs.existsSync(cmd.mediaPath)) {
@@ -308,6 +329,78 @@ async function sendCustomCommand(m, conn, cmd) {
   await conn.reply(m.chat, cmd.content || '> ⚠ Comando sin contenido.', m)
 }
 
+async function sendBannerMenu(conn, m, menuText, fgrupo) {
+  let config = readJson(BANNER_CONFIG, null)
+
+  try {
+    if (config && config.path && fs.existsSync(config.path)) {
+      let buffer = fs.readFileSync(config.path)
+
+      if (config.type === 'image') {
+        return conn.sendMessage(
+          m.chat,
+          {
+            image: buffer,
+            caption: menuText,
+            mimetype: config.mimetype || 'image/jpeg'
+          },
+          { quoted: fgrupo || m }
+        )
+      }
+
+      if (config.type === 'gif') {
+        return conn.sendMessage(
+          m.chat,
+          {
+            video: buffer,
+            caption: menuText,
+            gifPlayback: true,
+            mimetype: 'video/mp4'
+          },
+          { quoted: fgrupo || m }
+        )
+      }
+
+      if (config.type === 'video') {
+        return conn.sendMessage(
+          m.chat,
+          {
+            video: buffer,
+            caption: menuText,
+            gifPlayback: false,
+            mimetype: 'video/mp4'
+          },
+          { quoted: fgrupo || m }
+        )
+      }
+
+      if (config.type === 'sticker') {
+        await conn.sendMessage(
+          m.chat,
+          {
+            sticker: buffer
+          },
+          { quoted: fgrupo || m }
+        )
+
+        return conn.reply(m.chat, menuText, fgrupo || m)
+      }
+    }
+
+    let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
+
+    if (fs.existsSync(pp)) {
+      return conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo || m)
+    }
+
+    return conn.reply(m.chat, menuText, fgrupo || m)
+
+  } catch (e) {
+    console.error(e)
+    return conn.reply(m.chat, menuText, fgrupo || m)
+  }
+}
+
 async function sendMenuVentas(m, conn, usedPrefix) {
   if (!m.isGroup) {
     return conn.reply(m.chat, `> ⚠ Este menú funciona en grupos.`, m)
@@ -331,8 +424,7 @@ async function sendMenuVentas(m, conn, usedPrefix) {
   let commandsFile = await getCommandsFile(conn, m.chat)
   let comandos = readJson(commandsFile, {})
 
-  let lista = Object.values(comandos)
-    .sort((a, b) => a.createdAt - b.createdAt)
+  let lista = Object.values(comandos).sort((a, b) => a.createdAt - b.createdAt)
 
   let comandosCreados = ''
 
@@ -402,6 +494,10 @@ y su propia lista de comandos.
 
 ━━━━━━━━━━━━━━━━━━━━
 
+${comandosCreados}
+
+━━━━━━━━━━━━━━━━━━━━
+
 ╭───────────────⊰ 🔥
 │ ⚡ *${botname}*
 │ 👑 Alan Shop Dev
@@ -411,7 +507,6 @@ y su propia lista de comandos.
 
   await m.react('🔥')
 
-  let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
   let thumb = null
 
   try {
@@ -437,11 +532,7 @@ y su propia lista de comandos.
     }
   }
 
-  try {
-    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo)
-  } catch {
-    await conn.reply(m.chat, menuText, m)
-  }
+  return sendBannerMenu(conn, m, menuText, fgrupo)
 }
 
 let handler = async (m, { conn, text, command, usedPrefix }) => {
@@ -506,7 +597,7 @@ handler.before = async (m, { conn, usedPrefix }) => {
 
 handler.help = ['menuventas', 'setnombre <texto>']
 handler.tags = ['ventas']
-handler.command = /^(set|menuventas|menuv|menúv)/i
+handler.command = /^(set(?!banner|bannergif|bannervideo|anner)|menuventas|menuv|menúv)/i
 
 export default handler
 
