@@ -6,14 +6,13 @@ const botname = global.botname || 'Alan Dev'
 
 const ROOT = path.join(process.cwd(), 'database', 'ventas_grupos')
 const INDEX_FILE = path.join(ROOT, '_index.json')
-
-const BANNER_DIR = path.join(process.cwd(), 'storage', 'menu_banner')
-const BANNER_CONFIG = path.join(BANNER_DIR, 'banner.json')
+const MENU_IMAGE = './storage/img/catalogo.png'
 
 if (!fs.existsSync(ROOT)) fs.mkdirSync(ROOT, { recursive: true })
 if (!fs.existsSync(INDEX_FILE)) fs.writeFileSync(INDEX_FILE, JSON.stringify({}, null, 2))
 
 if (!global.ventasReplyLock) global.ventasReplyLock = new Map()
+if (!global.__ventasCustomHandled) global.__ventasCustomHandled = new Set()
 
 function readJson(file, fallback = {}) {
   try {
@@ -58,6 +57,16 @@ function getBody(m) {
   ).trim()
 }
 
+function clearMessageText(m) {
+  try {
+    m.text = ''
+    if (m.message?.conversation) m.message.conversation = ''
+    if (m.message?.extendedTextMessage?.text) m.message.extendedTextMessage.text = ''
+    if (m.message?.imageMessage?.caption) m.message.imageMessage.caption = ''
+    if (m.message?.videoMessage?.caption) m.message.videoMessage.caption = ''
+  } catch {}
+}
+
 function getExtension(mimetype = '') {
   if (mimetype.includes('image')) return 'jpg'
   if (mimetype.includes('video')) return 'mp4'
@@ -90,6 +99,20 @@ function isLocked(chat, sender, command) {
       global.ventasReplyLock.delete(key)
     }
   }, 4500)
+
+  return false
+}
+
+function markHandled(m, commandName) {
+  const msgId = m.key?.id || `${m.chat}:${m.sender}:${commandName}`
+
+  if (global.__ventasCustomHandled.has(msgId)) return true
+
+  global.__ventasCustomHandled.add(msgId)
+
+  setTimeout(() => {
+    global.__ventasCustomHandled.delete(msgId)
+  }, 10000)
 
   return false
 }
@@ -329,78 +352,6 @@ async function sendCustomCommand(m, conn, cmd) {
   await conn.reply(m.chat, cmd.content || '> ⚠ Comando sin contenido.', m)
 }
 
-async function sendBannerMenu(conn, m, menuText, fgrupo) {
-  let config = readJson(BANNER_CONFIG, null)
-
-  try {
-    if (config && config.path && fs.existsSync(config.path)) {
-      let buffer = fs.readFileSync(config.path)
-
-      if (config.type === 'image') {
-        return conn.sendMessage(
-          m.chat,
-          {
-            image: buffer,
-            caption: menuText,
-            mimetype: config.mimetype || 'image/jpeg'
-          },
-          { quoted: fgrupo || m }
-        )
-      }
-
-      if (config.type === 'gif') {
-        return conn.sendMessage(
-          m.chat,
-          {
-            video: buffer,
-            caption: menuText,
-            gifPlayback: true,
-            mimetype: 'video/mp4'
-          },
-          { quoted: fgrupo || m }
-        )
-      }
-
-      if (config.type === 'video') {
-        return conn.sendMessage(
-          m.chat,
-          {
-            video: buffer,
-            caption: menuText,
-            gifPlayback: false,
-            mimetype: 'video/mp4'
-          },
-          { quoted: fgrupo || m }
-        )
-      }
-
-      if (config.type === 'sticker') {
-        await conn.sendMessage(
-          m.chat,
-          {
-            sticker: buffer
-          },
-          { quoted: fgrupo || m }
-        )
-
-        return conn.reply(m.chat, menuText, fgrupo || m)
-      }
-    }
-
-    let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
-
-    if (fs.existsSync(pp)) {
-      return conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo || m)
-    }
-
-    return conn.reply(m.chat, menuText, fgrupo || m)
-
-  } catch (e) {
-    console.error(e)
-    return conn.reply(m.chat, menuText, fgrupo || m)
-  }
-}
-
 async function sendMenuVentas(m, conn, usedPrefix) {
   if (!m.isGroup) {
     return conn.reply(m.chat, `> ⚠ Este menú funciona en grupos.`, m)
@@ -532,7 +483,17 @@ ${comandosCreados}
     }
   }
 
-  return sendBannerMenu(conn, m, menuText, fgrupo)
+  if (fs.existsSync(MENU_IMAGE)) {
+    return conn.sendFile(
+      m.chat,
+      MENU_IMAGE,
+      'catalogo.png',
+      menuText,
+      fgrupo
+    )
+  }
+
+  return conn.reply(m.chat, menuText, fgrupo || m)
 }
 
 let handler = async (m, { conn, text, command, usedPrefix }) => {
@@ -556,6 +517,7 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
 handler.before = async (m, { conn, usedPrefix }) => {
   try {
+    if (m.__ventasCustomHandled) return true
     if (!m.isGroup) return false
 
     let body = getBody(m)
@@ -586,7 +548,14 @@ handler.before = async (m, { conn, usedPrefix }) => {
 
     if (!cmd) return false
 
+    if (markHandled(m, commandName)) return true
+
+    m.__ventasCustomHandled = true
+
     await sendCustomCommand(m, conn, cmd)
+
+    clearMessageText(m)
+
     return true
 
   } catch (e) {
@@ -597,7 +566,7 @@ handler.before = async (m, { conn, usedPrefix }) => {
 
 handler.help = ['menuventas', 'setnombre <texto>']
 handler.tags = ['ventas']
-handler.command = /^(set(?!banner|bannergif|bannervideo|anner)|menuventas|menuv|menúv)/i
+handler.command = /^(set(?!banner|bannergif|bannervideo|anner).*|menuventas|menuv|menúv)$/i
 
 export default handler
 
