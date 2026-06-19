@@ -1,3 +1,5 @@
+import fs from 'fs'
+
 const botname = global.botname || 'Alan Dev'
 
 const tags = {
@@ -147,15 +149,62 @@ ${comandos.map(menu => {
       await m.react('🔥')
     } catch {}
 
-    await conn.sendMessage(
-      m.chat,
-      {
-        text: menuText
+    const thumbnail = getMenuImage()
+
+    const fakeQuoted = {
+      key: {
+        fromMe: false,
+        participant: '0@s.whatsapp.net',
+        remoteJid: 'status@broadcast',
+        id: 'AlanDevMenu'
       },
-      {
-        quoted: m
+      message: {
+        locationMessage: {
+          name: `${botname} | Catálogo`,
+          address: 'Menú premium disponible',
+          jpegThumbnail: thumbnail || null
+        }
       }
-    )
+    }
+
+    const message = {
+      text: menuText
+    }
+
+    if (thumbnail) {
+      message.contextInfo = {
+        externalAdReply: {
+          title: `${botname} 🔥`,
+          body: 'Catálogo premium del bot',
+          thumbnail: thumbnail,
+          mediaType: 1,
+          renderLargerThumbnail: true,
+          sourceUrl: 'https://wa.me/'
+        }
+      }
+    }
+
+    try {
+      await conn.sendMessage(
+        m.chat,
+        message,
+        {
+          quoted: fakeQuoted
+        }
+      )
+    } catch (err) {
+      console.error('⚠️ Falló con encabezado, enviando menú normal:', err)
+
+      await conn.sendMessage(
+        m.chat,
+        {
+          text: menuText
+        },
+        {
+          quoted: m
+        }
+      )
+    }
 
   } catch (e) {
     console.error('❌ Error en menú:', e)
@@ -175,6 +224,24 @@ handler.tags = ['main']
 handler.command = ['menu', 'allmenu', 'menú']
 
 export default handler
+
+function getMenuImage() {
+  const rutas = [
+    './storage/IMG/catalogo.png',
+    './storage/img/catalogo.png',
+    './storage/IMG/catálogo.png',
+    './storage/img/catálogo.png'
+  ]
+
+  for (const ruta of rutas) {
+    if (fs.existsSync(ruta)) {
+      return fs.readFileSync(ruta)
+    }
+  }
+
+  console.log('⚠️ No se encontró catalogo.png en storage/IMG o storage/img')
+  return null
+}
 
 function clockString(ms) {
   const h = Math.floor(ms / 3600000)
