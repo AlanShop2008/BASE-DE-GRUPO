@@ -4,99 +4,144 @@ import { sendMenuConBanner } from '../lib/menuBanner.js'
 
 const botname = global.botname || 'Alan Dev'
 
-let tags = {
+const tags = {
+  main: '🏠 MENÚ PRINCIPAL',
   downloader: '📥 DESCARGAS',
-  ia: '🤖 IA',
+  ia: '🤖 INTELIGENCIA ARTIFICIAL',
   freefire: '🎮 FREE FIRE',
   group: '🛡️ GRUPOS',
   tools: '🛠️ HERRAMIENTAS',
   sticker: '🗡️ STICKERS',
   search: '🔍 BÚSQUEDA',
   anime: '🏹 ANIME',
-  ventas: '🛒 VENTAS'
+  ventas: '🛒 VENTAS',
+  owner: '👑 OWNER'
 }
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-    let userId = m.mentionedJid?.[0] || m.sender
-    let name = await conn.getName(userId)
+    const prefix = _p || '.'
+    const userId = m.mentionedJid?.[0] || m.sender
+    const name = await conn.getName(userId)
 
     if (!global.db.data.users) global.db.data.users = {}
     if (!global.db.data.chats) global.db.data.chats = {}
     if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
 
-    let user = global.db.data.users[userId] || {
+    const user = global.db.data.users[userId] || {
       premium: false
     }
 
-    let help = Object.values(global.plugins)
-      .filter(plugin => !plugin.disabled)
-      .map(plugin => ({
-        help: Array.isArray(plugin.help)
-          ? plugin.help
-          : (plugin.help ? [plugin.help] : []),
+    const plugins = Object.values(global.plugins || {})
+      .filter(plugin => plugin && !plugin.disabled)
 
-        tags: Array.isArray(plugin.tags)
-          ? plugin.tags
-          : (plugin.tags ? [plugin.tags] : []),
+    const help = plugins.map(plugin => ({
+      help: Array.isArray(plugin.help)
+        ? plugin.help
+        : plugin.help
+          ? [plugin.help]
+          : [],
 
-        limit: plugin.limit,
-        premium: plugin.premium
-      }))
+      tags: Array.isArray(plugin.tags)
+        ? plugin.tags
+        : plugin.tags
+          ? [plugin.tags]
+          : [],
 
-    let totalCommands = help.reduce((acc, plugin) => {
+      limit: plugin.limit,
+      premium: plugin.premium
+    }))
+
+    const totalCommands = help.reduce((acc, plugin) => {
       return acc + plugin.help.filter(cmd => cmd && cmd.trim()).length
     }, 0)
 
-    let runtime = clockString(process.uptime() * 1000)
+    const runtime = clockString(process.uptime() * 1000)
+
+    const fecha = new Date().toLocaleDateString('es-MX', {
+      timeZone: 'America/Mexico_City'
+    })
+
+    const hora = new Date().toLocaleTimeString('es-MX', {
+      timeZone: 'America/Mexico_City',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
 
     let menuText = `
-🔥⋆.˚ 𓂀 ALAN DEV 𓂀 ˚.⋆🔥
+╭━━━〔 🔥 ${botname.toUpperCase()} 🔥 〕━━━⬣
+┃
+┃ 👤 Usuario: ${name}
+┃ 💎 Premium: ${user.premium ? 'Activado ✅' : 'No activo ❌'}
+┃ ⚔️ Comandos: ${totalCommands}
+┃ ⏱️ Runtime: ${runtime}
+┃ 📅 Fecha: ${fecha}
+┃ 🕒 Hora: ${hora}
+┃ 🌐 Estado: Online ✅
+┃
+╰━━━━━━━━━━━━━━━━━━━━⬣
 
-╭──────────────╮
-│ 👤 Usuario: ${name}
-│ ⚔️ Comandos: ${totalCommands}
-│ 💎 Premium: ${user.premium ? 'Sí' : 'No'}
-│ ⏱️ Runtime: ${runtime}
-│ 🌐 Estado: Online
-╰──────────────╯
+╭━━〔 📌 LEYENDA 〕━━⬣
+┃ 🟡 Usa límite
+┃ 🔒 Solo premium
+┃ 🔹 Comando disponible
+╰━━━━━━━━━━━━━━⬣
 `.trim()
 
-    for (let tag in tags) {
-      let comandos = help
+    for (const tag in tags) {
+      const vistos = new Set()
+
+      const comandos = help
         .filter(menu => menu.tags.includes(tag))
         .flatMap(menu =>
-          menu.help.map(cmd => ({
-            cmd,
-            limit: menu.limit,
-            premium: menu.premium
-          }))
+          menu.help
+            .filter(cmd => cmd && cmd.trim())
+            .map(cmd => ({
+              cmd,
+              limit: menu.limit,
+              premium: menu.premium
+            }))
         )
+        .filter(menu => {
+          const key = `${tag}-${menu.cmd}`
+          if (vistos.has(key)) return false
+          vistos.add(key)
+          return true
+        })
+        .sort((a, b) => a.cmd.localeCompare(b.cmd))
 
       if (!comandos.length) continue
 
       menuText += `
 
-╭┈┈⊰ ${tags[tag]}
-${comandos.map(menu =>
-  `┊ 🔹 ${_p}${menu.cmd}${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
-).join('\n')}
-╰┈┈┈┈┈┈┈┈⊰`
+╭━━〔 ${tags[tag]} 〕━━⬣
+${comandos.map(menu => {
+  const limit = menu.limit ? ' 🟡' : ''
+  const premium = menu.premium ? ' 🔒' : ''
+  return `┃ 🔹 ${prefix}${menu.cmd}${limit}${premium}`
+}).join('\n')}
+╰━━〔 ${comandos.length} comandos 〕━━⬣`
     }
 
     menuText += `
 
-⚡ ALAN DEV PREMIUM
-🛒 Ventas • IA • Grupos
+╭━━〔 ⚡ ALAN DEV PREMIUM 〕━━⬣
+┃ 🛒 Ventas automáticas
+┃ 🤖 IA y herramientas
+┃ 🛡️ Administración de grupos
+┃ 📥 Descargas rápidas
+┃
+┃ Escribe ${prefix}menu para ver este menú.
+╰━━━━━━━━━━━━━━━━━━━━⬣
 `
 
-    await m.react('🔥')
+    await m.react('🔥').catch(() => {})
 
-    let groupName = await conn.getName(m.chat)
+    const groupName = await conn.getName(m.chat)
     let thumbnail = null
 
     try {
-      let ppUrl = await conn.profilePictureUrl(m.chat, 'image')
+      const ppUrl = await conn.profilePictureUrl(m.chat, 'image')
       const response = await fetch(ppUrl)
       thumbnail = Buffer.from(await response.arrayBuffer())
     } catch {
@@ -140,9 +185,9 @@ handler.command = ['menu', 'allmenu', 'menú']
 export default handler
 
 function clockString(ms) {
-  let h = Math.floor(ms / 3600000)
-  let m = Math.floor(ms / 60000) % 60
-  let s = Math.floor(ms / 1000) % 60
+  const h = Math.floor(ms / 3600000)
+  const m = Math.floor(ms / 60000) % 60
+  const s = Math.floor(ms / 1000) % 60
 
   return [h, m, s]
     .map(v => v.toString().padStart(2, '0'))
