@@ -1,254 +1,138 @@
+import ws from 'ws'
+import { generateWAMessageFromContent, prepareWAMessageMedia } from '@whiskeysockets/baileys'
 import fs from 'fs'
+import fetch from 'node-fetch'
 
-const botname = global.botname || 'Alan Dev'
+const botname = global.botname 
 
-const tags = {
-  main: '🏠 MENÚ PRINCIPAL',
-  downloader: '📥 DESCARGAS',
-  ia: '🤖 INTELIGENCIA ARTIFICIAL',
-  freefire: '🎮 FREE FIRE',
-  group: '🛡️ GRUPOS',
-  tools: '🛠️ HERRAMIENTAS',
-  sticker: '🗡️ STICKERS',
-  search: '🔍 BÚSQUEDA',
-  anime: '🏹 ANIME',
-  ventas: '🛒 VENTAS',
-  owner: '👑 OWNER'
+let tags = {
+  'main': 'INFO 📚',
+  'search': 'BUSQUEDA 🔎',
+  'group': 'GRUPOS 👥',
+  'freefire': 'FREE FIRE 📌',
+  'rpg': 'RPG 🌠',
+  'rg': 'REGISTRO 📁',
+  'sticker': 'STICKERS 🏞',
+  'img': 'IMAGENES 📸',
+  'nable': 'ON / OFF 📴', 
+  'downloader': 'DESCARGAS 📥',
+  'tools': 'HERRAMIENTAS 🔧',
+  'nsfw': 'NSFW 🔞', 
+  'anime': 'ANIME 👑',
 }
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-    const prefix = _p || '.'
-    const userId = m.mentionedJid?.[0] || m.sender
+  let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
+  let name = await conn.getName(userId);
 
-    let name = 'Usuario'
-    try {
-      name = conn.getName(userId) || 'Usuario'
-    } catch {
-      name = 'Usuario'
-    }
-
-    if (!global.db) global.db = {}
-    if (!global.db.data) global.db.data = {}
     if (!global.db.data.users) global.db.data.users = {}
-    if (!global.db.data.chats) global.db.data.chats = {}
-    if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
+    let user = global.db.data.users[userId] || { exp: 0, premium: false }
 
-    if (!global.db.data.users[userId]) {
-      global.db.data.users[userId] = {
-        premium: false
-      }
-    }
+    let totalUsers = Object.values(global.db.data.users).filter(u => u.exp > 0).length
+    let totalPremium = Object.values(global.db.data.users).filter(u => u.premium).length
 
-    const user = global.db.data.users[userId]
+    let help = Object.values(global.plugins)
+      .filter(plugin => !plugin.disabled)
+      .map(plugin => ({
+        help: Array.isArray(plugin.help) ? plugin.help : (plugin.help ? [plugin.help] : []),
+        tags: Array.isArray(plugin.tags) ? plugin.tags : (plugin.tags ? [plugin.tags] : []),
+        limit: plugin.limit,
+        premium: plugin.premium,
+      }))
+    let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
+    let uptime = Object.values(process.uptime() * 1000)
+    const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
+    let emojiM = global.db.data.chats[m.chat].customEmojiM || '🩵'
 
-    const plugins = Object.values(global.plugins || {})
-      .filter(plugin => plugin && !plugin.disabled)
+    let menuText = `_*¡𝐇𝐨𝐥𝐚 𝐁𝐢𝐞𝐧𝐯𝐞𝐧𝐢𝐝@ ${name} 𝐄𝐬𝐩𝐞𝐫𝐨 𝐲 𝐭𝐞𝐧𝐠𝐚𝐬 𝐮𝐧 𝐠𝐫𝐚𝐧 𝐝𝐢𝐚 ☀️!*_
 
-    const help = plugins.map(plugin => ({
-      help: Array.isArray(plugin.help)
-        ? plugin.help
-        : plugin.help
-          ? [plugin.help]
-          : [],
+┌────── •• ──────┐
+    「 _*𝐈𝐍𝐅𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓*_ 」
+└────── •• ──────┘
+┃ 💙 _𝖬𝐨𝐝𝐨_ : 𝐏𝐑𝐈𝐕𝐀𝐃𝐎
+┃ 💙 _𝐅𝐞𝐜𝐡𝐚_ : ${fecha}
+┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚𝐥_ : ${totalCommands}
+┃ 💙 _𝖢𝖱𝖤𝖠𝖣𝖮𝖱_ : *𝐀𝐋𝐀𝐍 𝐒𝐇𝐎𝐏*
+━━━━━━━━━━━━━━━
 
-      tags: Array.isArray(plugin.tags)
-        ? plugin.tags
-        : plugin.tags
-          ? [plugin.tags]
-          : [],
+_*L I S T A - D E - C O M A N D O S*_
+`
 
-      limit: plugin.limit,
-      premium: plugin.premium
-    }))
-
-    const totalCommands = help.reduce((acc, plugin) => {
-      return acc + plugin.help.filter(cmd => cmd && cmd.trim()).length
-    }, 0)
-
-    const runtime = clockString(process.uptime() * 1000)
-
-    const fecha = new Date().toLocaleDateString('es-MX', {
-      timeZone: 'America/Mexico_City'
-    })
-
-    const hora = new Date().toLocaleTimeString('es-MX', {
-      timeZone: 'America/Mexico_City',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-
-    let menuText = `
-╭━━━━━━〔 🔥 ${botname.toUpperCase()} 🔥 〕━━━━━━⬣
-┃
-┃ 👤 Usuario: ${name}
-┃ 💎 Premium: ${user.premium ? 'Activado ✅' : 'No activo ❌'}
-┃ ⚔️ Comandos: ${totalCommands}
-┃ ⏱️ Runtime: ${runtime}
-┃ 📅 Fecha: ${fecha}
-┃ 🕒 Hora: ${hora}
-┃ 🌐 Estado: Online ✅
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━⬣
-
-╭━━━━━━〔 📌 LEYENDA 〕━━━━━━⬣
-┃ 🔹 Comando disponible
-┃ 🟡 Usa límite
-┃ 🔒 Solo premium
-╰━━━━━━━━━━━━━━━━━━━━━━⬣
-`.trim()
-
-    for (const tag in tags) {
-      const vistos = new Set()
-
-      const comandos = help
-        .filter(menu => menu.tags.includes(tag))
-        .flatMap(menu =>
-          menu.help
-            .filter(cmd => cmd && cmd.trim())
-            .map(cmd => ({
-              cmd: cmd.trim(),
-              limit: menu.limit,
-              premium: menu.premium
-            }))
-        )
-        .filter(menu => {
-          const key = `${tag}-${menu.cmd}`
-          if (vistos.has(key)) return false
-          vistos.add(key)
-          return true
-        })
-        .sort((a, b) => a.cmd.localeCompare(b.cmd))
-
+    for (let tag in tags) {
+      let comandos = help.filter(menu => menu.tags.includes(tag))
       if (!comandos.length) continue
 
       menuText += `
-
-╭━━━━〔 ${tags[tag]} 〕━━━━⬣
-${comandos.map(menu => {
-  const limit = menu.limit ? ' 🟡' : ''
-  const premium = menu.premium ? ' 🔒' : ''
-  return `┃ 🔹 ${prefix}${menu.cmd}${limit}${premium}`
-}).join('\n')}
-╰━━━━〔 ${comandos.length} comandos 〕━━━━⬣`
-    }
-
-    menuText += `
-
-╭━━━━━━〔 ⚡ ALAN DEV PREMIUM 〕━━━━━━⬣
-┃ 🛒 Ventas automáticas
-┃ 🤖 IA y herramientas
-┃ 🛡️ Administración de grupos
-┃ 📥 Descargas rápidas
-┃
-┃ Escribe ${prefix}menu para ver este menú.
-╰━━━━━━━━━━━━━━━━━━━━━━⬣
+╭──「 ${tags[tag]} 」──
+${comandos.map(menu =>
+  menu.help.map(help =>
+    `┃ ${emojiM} ${_p}${help}${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
+  ).join('\n')
+).join('\n')}
+╰━━━━━━━━━━━⬣
 `
-
-    try {
-      await m.react('🔥')
-    } catch {}
-
-    const thumbnail = getMenuImage()
-
-    const fakeQuoted = {
-      key: {
-        fromMe: false,
-        participant: '0@s.whatsapp.net',
-        remoteJid: 'status@broadcast',
-        id: 'AlanDevMenu'
-      },
-      message: {
-        locationMessage: {
-          name: `${botname} | Catálogo`,
-          address: 'Menú premium disponible',
-          jpegThumbnail: thumbnail || null
-        }
-      }
     }
 
-    const message = {
-      text: menuText
+    await m.react('⚡️')
+
+   let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
+    
+let groupName = await conn.getName(m.chat)
+let ppUrl
+try {
+  ppUrl = await conn.profilePictureUrl(m.chat, 'image')
+} catch {
+  ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
+}
+
+const fgrupo = {
+  key: {
+    fromMe: false,
+    participant: "0@s.whatsapp.net",
+    remoteJid: "status@broadcast",
+    id: "Undefined"
+  },
+  message: {
+    locationMessage: {
+      name: groupName, 
+      jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
     }
-
-    if (thumbnail) {
-      message.contextInfo = {
-        externalAdReply: {
-          title: `${botname} 🔥`,
-          body: 'Catálogo premium del bot',
-          thumbnail: thumbnail,
-          mediaType: 1,
-          renderLargerThumbnail: true,
-          sourceUrl: 'https://wa.me/'
-        }
-      }
-    }
-
-    try {
-      await conn.sendMessage(
-        m.chat,
-        message,
-        {
-          quoted: fakeQuoted
-        }
-      )
-    } catch (err) {
-      console.error('⚠️ Falló con encabezado, enviando menú normal:', err)
-
-      await conn.sendMessage(
-        m.chat,
-        {
-          text: menuText
-        },
-        {
-          quoted: m
-        }
-      )
-    }
-
+  }
+};
+   await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo, m, fake)
   } catch (e) {
-    console.error('❌ Error en menú:', e)
-
-    try {
-      await conn.reply(
-        m.chat,
-        `✖️ Error al mostrar el menú.\n\n${e.message || e}`,
-        m
-      )
-    } catch {}
+    conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
+    console.error(e)
   }
 }
 
-handler.help = ['menu']
+handler.help = ['Menu']
 handler.tags = ['main']
 handler.command = ['menu', 'allmenu', 'menú']
 
 export default handler
 
-function getMenuImage() {
-  const rutas = [
-    './storage/IMG/catalogo.png',
-    './storage/img/catalogo.png',
-    './storage/IMG/catálogo.png',
-    './storage/img/catálogo.png'
-  ]
-
-  for (const ruta of rutas) {
-    if (fs.existsSync(ruta)) {
-      return fs.readFileSync(ruta)
-    }
-  }
-
-  console.log('⚠️ No se encontró catalogo.png en storage/IMG o storage/img')
-  return null
+function clockString(ms) {
+  let h = Math.floor(ms / 3600000)
+  let m = Math.floor(ms / 60000) % 60
+  let s = Math.floor(ms / 1000) % 60
+  return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
 }
 
-function clockString(ms) {
-  const h = Math.floor(ms / 3600000)
-  const m = Math.floor(ms / 60000) % 60
-  const s = Math.floor(ms / 1000) % 60
+function getSaludo() {
+  let options = {
+    timeZone: "America/Marigot",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hour12: false
+  }
 
-  return [h, m, s]
-    .map(v => v.toString().padStart(2, '0'))
-    .join(':')
+  let horaStr = new Date().toLocaleString("es-DO", options)
+  let [hora] = horaStr.split(":").map(n => parseInt(n))
+
+  if (hora >= 5 && hora < 12) return `🌅 Buenos días | 🕒 ${horaStr}`
+  if (hora >= 12 && hora < 18) return `☀️ Buenas tardes | 🕒 ${horaStr}`
+  return `🌙 Buenas noches | 🕒 ${horaStr}`
 }
