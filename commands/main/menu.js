@@ -1,6 +1,5 @@
 import fs from 'fs'
 import fetch from 'node-fetch'
-import { sendMenuConBanner } from '../lib/menuBanner.js'
 
 const botname = global.botname || 'Alan Dev'
 
@@ -137,12 +136,12 @@ ${comandos.map(menu => {
 
     await m.react('🔥').catch(() => {})
 
-    const groupName = await conn.getName(m.chat)
+    let groupName = await conn.getName(m.chat).catch(() => botname)
     let thumbnail = null
 
     try {
-      const ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-      const response = await fetch(ppUrl)
+      let ppUrl = await conn.profilePictureUrl(m.chat, 'image')
+      let response = await fetch(ppUrl)
       thumbnail = Buffer.from(await response.arrayBuffer())
     } catch {
       if (fs.existsSync('./storage/img/catalogo.png')) {
@@ -165,7 +164,23 @@ ${comandos.map(menu => {
       }
     }
 
-    await sendMenuConBanner(conn, m, menuText, fgrupo)
+    await conn.sendMessage(
+      m.chat,
+      {
+        text: menuText,
+        contextInfo: {
+          externalAdReply: {
+            title: `${botname} 🔥`,
+            body: 'Menú premium disponible',
+            thumbnail,
+            mediaType: 1,
+            renderLargerThumbnail: true,
+            sourceUrl: 'https://wa.me/'
+          }
+        }
+      },
+      { quoted: fgrupo }
+    )
 
   } catch (e) {
     console.error(e)
