@@ -1,6 +1,3 @@
-import fs from 'fs'
-import fetch from 'node-fetch'
-
 const botname = global.botname || 'Alan Dev'
 
 const tags = {
@@ -21,15 +18,19 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
     const prefix = _p || '.'
     const userId = m.mentionedJid?.[0] || m.sender
-    const name = await conn.getName(userId)
+    const name = await conn.getName(userId).catch(() => 'Usuario')
 
     if (!global.db.data.users) global.db.data.users = {}
     if (!global.db.data.chats) global.db.data.chats = {}
     if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
 
-    const user = global.db.data.users[userId] || {
-      premium: false
+    if (!global.db.data.users[userId]) {
+      global.db.data.users[userId] = {
+        premium: false
+      }
     }
+
+    const user = global.db.data.users[userId]
 
     const plugins = Object.values(global.plugins || {})
       .filter(plugin => plugin && !plugin.disabled)
@@ -68,7 +69,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
     })
 
     let menuText = `
-╭━━━〔 🔥 ${botname.toUpperCase()} 🔥 〕━━━⬣
+╭━━━━━━〔 🔥 ${botname.toUpperCase()} 🔥 〕━━━━━━⬣
 ┃
 ┃ 👤 Usuario: ${name}
 ┃ 💎 Premium: ${user.premium ? 'Activado ✅' : 'No activo ❌'}
@@ -78,13 +79,13 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 ┃ 🕒 Hora: ${hora}
 ┃ 🌐 Estado: Online ✅
 ┃
-╰━━━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━━━━━━━━━⬣
 
-╭━━〔 📌 LEYENDA 〕━━⬣
+╭━━━━━━〔 📌 LEYENDA 〕━━━━━━⬣
+┃ 🔹 Comando disponible
 ┃ 🟡 Usa límite
 ┃ 🔒 Solo premium
-┃ 🔹 Comando disponible
-╰━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━━━━━━━━━⬣
 `.trim()
 
     for (const tag in tags) {
@@ -96,7 +97,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
           menu.help
             .filter(cmd => cmd && cmd.trim())
             .map(cmd => ({
-              cmd,
+              cmd: cmd.trim(),
               limit: menu.limit,
               premium: menu.premium
             }))
@@ -113,83 +114,52 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 
       menuText += `
 
-╭━━〔 ${tags[tag]} 〕━━⬣
+╭━━━━〔 ${tags[tag]} 〕━━━━⬣
 ${comandos.map(menu => {
   const limit = menu.limit ? ' 🟡' : ''
   const premium = menu.premium ? ' 🔒' : ''
   return `┃ 🔹 ${prefix}${menu.cmd}${limit}${premium}`
 }).join('\n')}
-╰━━〔 ${comandos.length} comandos 〕━━⬣`
+╰━━━━〔 ${comandos.length} comandos 〕━━━━⬣`
     }
 
     menuText += `
 
-╭━━〔 ⚡ ALAN DEV PREMIUM 〕━━⬣
+╭━━━━━━〔 ⚡ ALAN DEV PREMIUM 〕━━━━━━⬣
 ┃ 🛒 Ventas automáticas
 ┃ 🤖 IA y herramientas
 ┃ 🛡️ Administración de grupos
 ┃ 📥 Descargas rápidas
 ┃
 ┃ Escribe ${prefix}menu para ver este menú.
-╰━━━━━━━━━━━━━━━━━━━━⬣
+╰━━━━━━━━━━━━━━━━━━━━━━⬣
 `
 
     await m.react('🔥').catch(() => {})
 
-    let groupName = await conn.getName(m.chat).catch(() => botname)
-    let thumbnail = null
-
-    try {
-      let ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-      let response = await fetch(ppUrl)
-      thumbnail = Buffer.from(await response.arrayBuffer())
-    } catch {
-      if (fs.existsSync('./storage/img/catalogo.png')) {
-        thumbnail = fs.readFileSync('./storage/img/catalogo.png')
-      }
-    }
-
-    const fgrupo = {
-      key: {
-        fromMe: false,
-        participant: '0@s.whatsapp.net',
-        remoteJid: 'status@broadcast',
-        id: 'AlanDevMenu'
-      },
-      message: {
-        locationMessage: {
-          name: groupName,
-          jpegThumbnail: thumbnail
-        }
-      }
-    }
+    console.log('✅ Menú generado:', menuText.length, 'caracteres')
+    console.log('📤 Enviando menú...')
 
     await conn.sendMessage(
       m.chat,
       {
-        text: menuText,
-        contextInfo: {
-          externalAdReply: {
-            title: `${botname} 🔥`,
-            body: 'Menú premium disponible',
-            thumbnail,
-            mediaType: 1,
-            renderLargerThumbnail: true,
-            sourceUrl: 'https://wa.me/'
-          }
-        }
+        text: menuText
       },
-      { quoted: fgrupo }
+      {
+        quoted: m
+      }
     )
 
-  } catch (e) {
-    console.error(e)
+    console.log('✅ Menú enviado correctamente')
 
-    conn.reply(
+  } catch (e) {
+    console.error('❌ Error en menú:', e)
+
+    await conn.reply(
       m.chat,
       `✖️ Error al mostrar el menú.\n\n${e.message || e}`,
       m
-    )
+    ).catch(() => {})
   }
 }
 
