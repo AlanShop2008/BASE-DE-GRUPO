@@ -18,8 +18,16 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
     const prefix = _p || '.'
     const userId = m.mentionedJid?.[0] || m.sender
-    const name = await conn.getName(userId).catch(() => 'Usuario')
 
+    let name = 'Usuario'
+    try {
+      name = conn.getName(userId) || 'Usuario'
+    } catch {
+      name = 'Usuario'
+    }
+
+    if (!global.db) global.db = {}
+    if (!global.db.data) global.db.data = {}
     if (!global.db.data.users) global.db.data.users = {}
     if (!global.db.data.chats) global.db.data.chats = {}
     if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
@@ -135,10 +143,9 @@ ${comandos.map(menu => {
 ╰━━━━━━━━━━━━━━━━━━━━━━⬣
 `
 
-    await m.react('🔥').catch(() => {})
-
-    console.log('✅ Menú generado:', menuText.length, 'caracteres')
-    console.log('📤 Enviando menú...')
+    try {
+      await m.react('🔥')
+    } catch {}
 
     await conn.sendMessage(
       m.chat,
@@ -150,16 +157,16 @@ ${comandos.map(menu => {
       }
     )
 
-    console.log('✅ Menú enviado correctamente')
-
   } catch (e) {
     console.error('❌ Error en menú:', e)
 
-    await conn.reply(
-      m.chat,
-      `✖️ Error al mostrar el menú.\n\n${e.message || e}`,
-      m
-    ).catch(() => {})
+    try {
+      await conn.reply(
+        m.chat,
+        `✖️ Error al mostrar el menú.\n\n${e.message || e}`,
+        m
+      )
+    } catch {}
   }
 }
 
