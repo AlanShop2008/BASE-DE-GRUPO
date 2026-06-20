@@ -1,7 +1,7 @@
 import fs from 'fs'
 
 const handler = async (m, { conn }) => {
-  const number = '5215637362813'
+  const number = '5212296587060'
   const name = 'Alan Dev'
 
   const vcard = `BEGIN:VCARD
