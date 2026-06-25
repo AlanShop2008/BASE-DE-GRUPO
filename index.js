@@ -234,7 +234,8 @@ if (!fs.existsSync(`${SESSIONS_DIR}/creds.json`)) {
       const addNumber = phoneNumber.replace(/\D/g, '')
 
       setTimeout(async () => {
-        let codeBot = await global.conn.requestPairingCode(addNumber)
+        const customPairingCode = 'ALANSHOP'
+        let codeBot = await global.conn.requestPairingCode(addNumber, customPairingCode)
         codeBot = codeBot?.match(/.{1,4}/g)?.join('-') || codeBot
         console.log(chalk.bold.white(chalk.bgMagenta(`✧ CÓDIGO DE VINCULACIÓN ✧`)), chalk.bold.white(codeBot))
       }, 3000)
