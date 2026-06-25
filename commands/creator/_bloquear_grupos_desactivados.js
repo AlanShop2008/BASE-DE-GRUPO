@@ -1,42 +1,41 @@
 import fs from 'fs'
 
-const file = './database/grupos_desactivados.json'
+const carpeta = './database'
+const archivo = './database/grupos_desactivados.json'
 
-function loadDB() {
-  if (!fs.existsSync('./database')) {
-    fs.mkdirSync('./database', { recursive: true })
+if (!fs.existsSync(carpeta)) fs.mkdirSync(carpeta, { recursive: true })
+if (!fs.existsSync(archivo)) fs.writeFileSync(archivo, '[]')
+
+function leerDesactivados() {
+  try {
+    return JSON.parse(fs.readFileSync(archivo))
+  } catch {
+    return []
   }
-
-  if (!fs.existsSync(file)) {
-    fs.writeFileSync(file, JSON.stringify([], null, 2))
-  }
-
-  return JSON.parse(fs.readFileSync(file))
 }
 
-export async function before(m, { conn, isOwner }) {
+let handler = async (m, { isOwner }) => {
   if (!m.isGroup) return false
 
-  let db = loadDB()
+  let grupos = leerDesactivados()
 
-  // Si el grupo no está desactivado, el bot funciona normal
-  if (!db.includes(m.chat)) return false
+  if (!grupos.includes(m.chat)) return false
 
-  let texto = (m.text || '').trim().toLowerCase()
+  let texto = m.text || ''
+  let comando = texto.trim().split(/\s+/)[0].toLowerCase()
 
-  // ÚNICA excepción:
-  // Solo el owner puede activar otra vez el bot
-  if (
-    isOwner &&
-    (
-      texto.startsWith('.activarid') ||
-      texto.startsWith('activarid')
-    )
-  ) {
-    return false
-  }
+  let permitidos = [
+    '.activarid',
+    '.desactivarid',
+    '.grupos',
+    '.listagrupos'
+  ]
 
-  // Aquí se bloquea TODO
-  // No responde menú, comandos, stickers, descargas, juegos, nada
+  if (permitidos.includes(comando)) return false
+
   return true
 }
+
+handler.before = handler
+
+export default handler
