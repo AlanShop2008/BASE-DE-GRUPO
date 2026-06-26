@@ -42,38 +42,42 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
       }))
     let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
     const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
-    let emojiM = global.db.data.chats[m.chat].customEmojiM || '✨'
+    let emojiM = global.db.data.chats[m.chat].customEmojiM || '⚡'
 
-    // NUEVA ESTÉTICA RE DISEÑADA
-    let menuText = `*👋 ¡Hola, ${name}!*
-Espero que tengas un excelente día. ☀️
+    // DISEÑO RADICALMENTE NUEVO: ESTILO MINIMALISTA Y LIMPIO
+    let menuText = `✨ *¡Hola, ${name}!*
+Espero que tengas un excelente día.
 
-`☠️ ─── [ *𝐈𝐍𝐅𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓* ] ─── ☠️
-│ 🛠️ *Modo:* _Privado_
-│ 📅 *Fecha:* \`${fecha}\`
-│ 📊 *Comandos:* \`${totalCommands}\`
-│ 👑 *Creador:* *ALAN SHOP*
-│ 
-│ _Leyenda: 🟡 (Límite) | 🔒 (Premium)_
-╰──────────────────────────⬡
+╔════════════════════╗
+   🪐  *${botname || 'WAVE BOT'}*  🪐
+╚════════════════════╝
+ 👤 *Creador:* Alan Shop
+ 🕒 *Fecha:* ${fecha}
+ 📊 *Comandos:* [ ${totalCommands} ]
+ 🔒 *Acceso:* Premium habilitado
 
-*💡 L I S T A  D E  C O M A N D O S :*
+💡 _Abreviaturas: 🟡 Límite | 🔑 Premium_
+ ────────────────────
 `
 
     for (let tag in tags) {
       let comandos = help.filter(menu => menu.tags.includes(tag))
       if (!comandos.length) continue
 
-      menuText += `
-╭✨ *${tags[tag]}*
-${comandos.map(menu =>
-  menu.help.map(help =>
-    `┃  ${emojiM}  _${_p}${help}_${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
-  ).join('\n')
-).join('\n')}
-╰───────────────⬡
-`
+      // Título de la categoría centrado visualmente
+      menuText += `\n🔹 *[ ${tags[tag]} ]* 🔹\n`
+      
+      comandos.map(menu =>
+        menu.help.map(help => {
+          let badge = menu.limit ? ' 🟡' : ''
+          badge += menu.premium ? ' 🔑' : ''
+          // Formato ultra limpio para los comandos
+          menuText += `  ${emojiM}  \`${_p}${help}\`${badge}\n`
+        })
+      )
     }
+
+    menuText += `\n────────────────────\n⚡ _Bot optimizado por Alan Shop_`
 
     await m.react('⚡️')
 
