@@ -42,44 +42,44 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
       }))
     let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
     const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
-    let emojiM = global.db.data.chats[m.chat].customEmojiM || '⚡'
+    let emojiM = global.db.data.chats[m.chat].customEmojiM || '🌸'
 
-    // DISEÑO RADICALMENTE NUEVO: ESTILO MINIMALISTA Y LIMPIO
-    let menuText = `✨ *¡Hola, ${name}!*
-Espero que tengas un excelente día.
+    // DISEÑO CUTE / AESTHETIC 🎀
+    let menuText = `*☁️ ───  ¡Hola, ${name}!  ─── ☁️*
+*Tengan un día mágico y lleno de destellos ✨*
 
-╔════════════════════╗
-   🪐  *${botname || 'WAVE BOT'}*  🪐
-╚════════════════════╝
- 👤 *Creador:* Alan Shop
- 🕒 *Fecha:* ${fecha}
- 📊 *Comandos:* [ ${totalCommands} ]
- 🔒 *Acceso:* Premium habilitado
+🌟 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌟
+ ୨୧  *INFO DEL BOT*  ୨୧
+🌟 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌟
+ ☁️ *Creador:* Alan Shop
+ 📅 *Fecha:* \`${fecha}\`
+ 📊 *Comandos:* \`[ ${totalCommands} ]\`
+ 🔒 *Modo:* _Privado_ 🎀
 
-💡 _Abreviaturas: 🟡 Límite | 🔑 Premium_
- ────────────────────
+_Guía: 🟡 Límite | 🔑 Premium_
+ 🌸 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌸
 `
 
     for (let tag in tags) {
       let comandos = help.filter(menu => menu.tags.includes(tag))
       if (!comandos.length) continue
 
-      // Título de la categoría centrado visualmente
-      menuText += `\n🔹 *[ ${tags[tag]} ]* 🔹\n`
+      // Cabeceras de categorías ultra cute
+      menuText += `\n*⋆  [ ${tags[tag]} ]  ⋆*\n`
       
       comandos.map(menu =>
         menu.help.map(help => {
           let badge = menu.limit ? ' 🟡' : ''
           badge += menu.premium ? ' 🔑' : ''
-          // Formato ultra limpio para los comandos
-          menuText += `  ${emojiM}  \`${_p}${help}\`${badge}\n`
+          // Formato limpio y tierno para la lista de comandos
+          menuText += ` • ${emojiM} *${_p}${help}*${badge}\n`
         })
       )
     }
 
-    menuText += `\n────────────────────\n⚡ _Bot optimizado por Alan Shop_`
+    menuText += `\n🌸 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌸\n✨ _Bot optimizado con amor por Alan Shop_ 🎀`
 
-    await m.react('⚡️')
+    await m.react('🌸')
 
     let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
     
