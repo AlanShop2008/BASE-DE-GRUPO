@@ -23,8 +23,8 @@ let tags = {
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-  let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
-  let name = await conn.getName(userId);
+    let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
+    let name = await conn.getName(userId);
 
     if (!global.db.data.users) global.db.data.users = {}
     let user = global.db.data.users[userId] || { exp: 0, premium: false }
@@ -41,22 +41,23 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
         premium: plugin.premium,
       }))
     let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
-    let uptime = Object.values(process.uptime() * 1000)
     const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
-    let emojiM = global.db.data.chats[m.chat].customEmojiM || '🩵'
+    let emojiM = global.db.data.chats[m.chat].customEmojiM || '✨'
 
-    let menuText = `_*¡𝐇𝐨𝐥𝐚 𝐁𝐢𝐞𝐧𝐯𝐞𝐧𝐢𝐝@ ${name} 𝐄𝐬𝐩𝐞𝐫𝐨 𝐲 𝐭𝐞𝐧𝐠𝐚𝐬 𝐮𝐧 𝐠𝐫𝐚𝐧 𝐝𝐢𝐚 ☀️!*_
+    // NUEVA ESTÉTICA RE DISEÑADA
+    let menuText = `*👋 ¡Hola, ${name}!*
+Espero que tengas un excelente día. ☀️
 
-┌────── •• ──────┐
-    「 _*𝐈𝐍𝐅𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓*_ 」
-└────── •• ──────┘
-┃ 💙 _𝖬𝐨𝐝𝐨_ : 𝐏𝐑𝐈𝐕𝐀𝐃𝐎
-┃ 💙 _𝐅𝐞𝐜𝐡𝐚_ : ${fecha}
-┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚𝐥_ : ${totalCommands}
-┃ 💙 _𝖢𝖱𝖤𝖠𝖣𝖮𝖱_ : *𝐀𝐋𝐀𝐍 𝐒𝐇𝐎𝐏*
-━━━━━━━━━━━━━━━
+`☠️ ─── [ *𝐈𝐍𝐅𝐎 𝐃𝐄𝐋 𝐁𝐎𝐓* ] ─── ☠️
+│ 🛠️ *Modo:* _Privado_
+│ 📅 *Fecha:* \`${fecha}\`
+│ 📊 *Comandos:* \`${totalCommands}\`
+│ 👑 *Creador:* *ALAN SHOP*
+│ 
+│ _Leyenda: 🟡 (Límite) | 🔒 (Premium)_
+╰──────────────────────────⬡
 
-_*L I S T A - D E - C O M A N D O S*_
+*💡 L I S T A  D E  C O M A N D O S :*
 `
 
     for (let tag in tags) {
@@ -64,43 +65,44 @@ _*L I S T A - D E - C O M A N D O S*_
       if (!comandos.length) continue
 
       menuText += `
-╭──「 ${tags[tag]} 」──
+╭✨ *${tags[tag]}*
 ${comandos.map(menu =>
   menu.help.map(help =>
-    `┃ ${emojiM} ${_p}${help}${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
+    `┃  ${emojiM}  _${_p}${help}_${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
   ).join('\n')
 ).join('\n')}
-╰━━━━━━━━━━━⬣
+╰───────────────⬡
 `
     }
 
     await m.react('⚡️')
 
-   let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
+    let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
     
-let groupName = await conn.getName(m.chat)
-let ppUrl
-try {
-  ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-} catch {
-  ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
-}
-
-const fgrupo = {
-  key: {
-    fromMe: false,
-    participant: "0@s.whatsapp.net",
-    remoteJid: "status@broadcast",
-    id: "Undefined"
-  },
-  message: {
-    locationMessage: {
-      name: groupName, 
-      jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+    let groupName = await conn.getName(m.chat)
+    let ppUrl
+    try {
+      ppUrl = await conn.profilePictureUrl(m.chat, 'image')
+    } catch {
+      ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
     }
-  }
-};
-   await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo, m, fake)
+
+    const fgrupo = {
+      key: {
+        fromMe: false,
+        participant: "0@s.whatsapp.net",
+        remoteJid: "status@broadcast",
+        id: "Undefined"
+      },
+      message: {
+        locationMessage: {
+          name: groupName, 
+          jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+        }
+      }
+    };
+    
+    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo, m, fake)
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
     console.error(e)
