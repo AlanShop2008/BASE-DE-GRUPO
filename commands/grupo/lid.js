@@ -1,39 +1,61 @@
-let handler = async (m, { conn, participants }) => {
+let handler = async (m, { conn, participants, groupMetadata }) => {
   try {
     if (!m.isGroup) return m.reply('❌ Este comando solo funciona en grupos.')
 
-    let target =
-      m.mentionedJid?.[0] ||
-      m.quoted?.sender ||
-      m.sender
+    let metadata = groupMetadata || await conn.groupMetadata(m.chat)
+    let lista = participants || metadata.participants || []
+    let groupName = metadata.subject || await conn.getName(m.chat)
 
-    let info = participants.find(p =>
-      p.id === target ||
-      p.jid === target ||
-      p.lid === target ||
-      p.id?.includes(target.split('@')[0])
-    )
+    let texto = `*╭┈┈┈⊰* 『 *Participantes* 』  
+*┊* 👥 *Grupo:* ${groupName}
+*┊* 🔢 *Total:* ${lista.length} miembros  
+*╰┈┈┈┈┈┈┈┈┈⊰*\n`
 
-    let jid = info?.jid || info?.id || target
-    let lid = info?.lid || info?.lidJid || info?.id || 'No encontrado'
+    let mentions = []
 
-    let texto = `╭─「 🔐 LID DEL MIEMBRO 」
-│ 👤 Usuario: ${await conn.getName(jid)}
-│ 🆔 JID: ${jid}
-│ 🔒 LID: ${lid}
-╰──────────────`
+    for (let i = 0; i < lista.length; i++) {
+      let user = lista[i]
+
+      let jid = user.id || user.jid || user.lid || ''
+      let lid =
+        user.lid ||
+        user.lidJid ||
+        (user.id?.endsWith('@lid') ? user.id : null) ||
+        (user.jid?.endsWith('@lid') ? user.jid : null) ||
+        jid
+
+      let mention = jid
+      mentions.push(mention)
+
+      let rol = user.admin === 'superadmin'
+        ? '👑 *Propietario*'
+        : user.admin === 'admin'
+          ? '🛡️ *Administrador*'
+          : '👤 *Miembro*'
+
+      texto += `
+╭─✿ *Usuario ${i + 1}* ✿
+│  *Nombre:* @${mention.split('@')[0]}
+│  *JID:* ${lid}
+│  *Rol:* ${rol}
+╰───────────────✿
+`
+    }
 
     await m.react('🔐')
-    await conn.reply(m.chat, texto, m)
+    await conn.sendMessage(m.chat, {
+      text: texto,
+      mentions
+    }, { quoted: m })
 
   } catch (e) {
     console.error(e)
-    conn.reply(m.chat, `✖️ Error al obtener LID:\n\n${e}`, m)
+    conn.reply(m.chat, `✖️ Error al obtener participantes:\n\n${e}`, m)
   }
 }
 
-handler.help = ['lid @usuario']
+handler.help = ['lid']
 handler.tags = ['tools']
-handler.command = ['lid', 'getlid']
+handler.command = ['lid', 'lids', 'participanteslid']
 
 export default handler
