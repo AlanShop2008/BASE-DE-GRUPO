@@ -1,31 +1,29 @@
-import { watchFile, unwatchFile } from 'fs' 
-import chalk from 'chalk'
-import { fileURLToPath } from 'url'
-import fs from 'fs'
-import cheerio from 'cheerio'
-import fetch from 'node-fetch'
-import axios from 'axios'
+// ===============================
+// CONFIGURACIÓN DEL DUEÑO
+// ===============================
 
-//*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
+const OWNER_NUM = '5217715555998'
+const OWNER_LID = '82816314421258'
+const OWNER_NAME = 'ALAN_SHOP'
+
+// ===============================
+// Configuración automática
+// ===============================
 
 global.retirado = [
-['5215637362813','Antonyxx_',true]
-];
+  [OWNER_NUM, OWNER_NAME, true]
+]
 
-/*habrán comandos especiales para los retirados algo q los identifique | nota ustedes pondrán los coamndos y q solo funcione para los retirados*/
+global.rrowner = [OWNER_NUM]
 
-// Configuraciones principales
-global.rrowner = ['5219617591976']
 global.owner = [
-   ['5215637362813', 'Antonyxx_', true],
-   ['5215637362813', 'Mantenimiento Antonyxx_', true],
-   ['62127406624961', 'Antonyxx_ Lid', true],
-   ['125018579189775', 'Anthony Lid', true]
-   ];
+  [OWNER_NUM, OWNER_NAME, true],
+  [OWNER_LID, `${OWNER_NAME} Lid`, true]
+]
 
-global.mods = ['5215637362813', '5215637362813']
-global.suittag = ['5215637362813', '5215637362813']
-global.prems = ['5215637362813', '5215637362813', '5215637362813']
+global.mods = [OWNER_NUM]
+global.suittag = [OWNER_NUM]
+global.prems = [OWNER_NUM]
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
