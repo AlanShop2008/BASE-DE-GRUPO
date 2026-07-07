@@ -83,8 +83,6 @@ _Guía: 🟡 Límite | 🔑 Premium_
 
     let pp = global.db.data.chats[m.chat]?.customPhotoM || './storage/img/catalogo.png'
 
-    let imgFake = await (await fetch('https://files.catbox.moe/29e520.jpg')).buffer()
-
     const fakeWhatsAppBusiness = {
       key: {
         fromMe: false,
@@ -92,25 +90,17 @@ _Guía: 🟡 Límite | 🔑 Premium_
         remoteJid: 'status@broadcast'
       },
       message: {
-        extendedTextMessage: {
-          text: 'WhatsApp Business ✅ • Estado',
-          contextInfo: {
-            externalAdReply: {
-              title: 'WhatsApp Business ✅ • Estado',
-              body: 'Contacto',
-              thumbnail: imgFake,
-              mediaType: 1,
-              renderLargerThumbnail: false,
-              showAdAttribution: false
-            }
-          }
+        locationMessage: {
+          degreesLatitude: 0,
+          degreesLongitude: 0,
+          name: 'WhatsApp Business ✅ • Estado',
+          address: 'Contacto',
+          jpegThumbnail: fs.readFileSync('./storage/img/fake.jpg')
         }
       }
     }
 
-    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, m, false, {
-      quoted: fakeWhatsAppBusiness
-    })
+    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fakeWhatsAppBusiness, m)
 
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
