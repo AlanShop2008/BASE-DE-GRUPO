@@ -27,10 +27,6 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
     let name = await conn.getName(userId)
 
     if (!global.db.data.users) global.db.data.users = {}
-    let user = global.db.data.users[userId] || { exp: 0, premium: false }
-
-    let totalUsers = Object.values(global.db.data.users).filter(u => u.exp > 0).length
-    let totalPremium = Object.values(global.db.data.users).filter(u => u.premium).length
 
     let help = Object.values(global.plugins)
       .filter(plugin => !plugin.disabled)
@@ -96,15 +92,25 @@ _Guía: 🟡 Límite | 🔑 Premium_
         remoteJid: 'status@broadcast'
       },
       message: {
-        locationMessage: {
-          name: 'WhatsApp Business ✅ • Estado',
-          address: 'Contacto',
-          jpegThumbnail: imgFake
+        extendedTextMessage: {
+          text: 'WhatsApp Business ✅ • Estado',
+          contextInfo: {
+            externalAdReply: {
+              title: 'WhatsApp Business ✅ • Estado',
+              body: 'Contacto',
+              thumbnail: imgFake,
+              mediaType: 1,
+              renderLargerThumbnail: false,
+              showAdAttribution: false
+            }
+          }
         }
       }
     }
 
-    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fakeWhatsAppBusiness)
+    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, m, false, {
+      quoted: fakeWhatsAppBusiness
+    })
 
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
