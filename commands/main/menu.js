@@ -87,6 +87,8 @@ _Guía: 🟡 Límite | 🔑 Premium_
 
     let pp = global.db.data.chats[m.chat]?.customPhotoM || './storage/img/catalogo.png'
 
+    let imgFake = await (await fetch('https://files.catbox.moe/29e520.jpg')).buffer()
+
     const fakeWhatsAppBusiness = {
       key: {
         fromMe: false,
@@ -94,14 +96,10 @@ _Guía: 🟡 Límite | 🔑 Premium_
         remoteJid: 'status@broadcast'
       },
       message: {
-        contactMessage: {
-          displayName: 'WhatsApp Business ✅',
-          vcard: `BEGIN:VCARD
-VERSION:3.0
-FN:WhatsApp Business ✅
-ORG:Contacto;
-TEL;type=CELL;type=VOICE;waid=0:+0
-END:VCARD`
+        locationMessage: {
+          name: 'WhatsApp Business ✅ • Estado',
+          address: 'Contacto',
+          jpegThumbnail: imgFake
         }
       }
     }
@@ -119,27 +117,3 @@ handler.tags = ['main']
 handler.command = ['menu', 'allmenu', 'menú']
 
 export default handler
-
-function clockString(ms) {
-  let h = Math.floor(ms / 3600000)
-  let m = Math.floor(ms / 60000) % 60
-  let s = Math.floor(ms / 1000) % 60
-  return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
-}
-
-function getSaludo() {
-  let options = {
-    timeZone: "America/Marigot",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: false
-  }
-
-  let horaStr = new Date().toLocaleString("es-DO", options)
-  let [hora] = horaStr.split(":").map(n => parseInt(n))
-
-  if (hora >= 5 && hora < 12) return `🌅 Buenos días | 🕒 ${horaStr}`
-  if (hora >= 12 && hora < 18) return `☀️ Buenas tardes | 🕒 ${horaStr}`
-  return `🌙 Buenas noches | 🕒 ${horaStr}`
-}
