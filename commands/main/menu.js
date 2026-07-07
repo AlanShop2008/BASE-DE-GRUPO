@@ -3,7 +3,7 @@ import { generateWAMessageFromContent, prepareWAMessageMedia } from '@whiskeysoc
 import fs from 'fs'
 import fetch from 'node-fetch'
 
-const botname = global.botname 
+const botname = global.botname
 
 let tags = {
   'main': 'INFO 📚',
@@ -14,10 +14,10 @@ let tags = {
   'rg': 'REGISTRO 📁',
   'sticker': 'STICKERS 🏞',
   'img': 'IMAGENES 📸',
-  'nable': 'ON / OFF 📴', 
+  'nable': 'ON / OFF 📴',
   'downloader': 'DESCARGAS 📥',
   'tools': 'HERRAMIENTAS 🔧',
-  'nsfw': 'NSFW 🔞', 
+  'nsfw': 'NSFW 🔞',
   'anime': 'ANIME 👑',
 }
 
@@ -39,8 +39,8 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 
     let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length
 
-    const fecha = new Date().toLocaleDateString("es-ES", {
-      timeZone: "America/Mexico_City",
+    const fecha = new Date().toLocaleDateString('es-ES', {
+      timeZone: 'America/Mexico_City',
       day: 'numeric',
       month: 'long'
     })
@@ -67,7 +67,7 @@ _Guía: 🟡 Límite | 🔑 Premium_
       if (!comandos.length) continue
 
       menuText += `\n*⋆  [ ${tags[tag]} ]  ⋆*\n`
-      
+
       comandos.map(menu =>
         menu.help.map(help => {
           let badge = menu.limit ? ' 🟡' : ''
@@ -83,24 +83,7 @@ _Guía: 🟡 Límite | 🔑 Premium_
 
     let pp = global.db.data.chats[m.chat]?.customPhotoM || './storage/img/catalogo.png'
 
-    const fakeWhatsAppBusiness = {
-      key: {
-        fromMe: false,
-        participant: '0@s.whatsapp.net',
-        remoteJid: 'status@broadcast'
-      },
-      message: {
-        locationMessage: {
-          degreesLatitude: 0,
-          degreesLongitude: 0,
-          name: 'WhatsApp Business ✅ • Estado',
-          address: 'Contacto',
-          jpegThumbnail: fs.readFileSync('./storage/img/fake.jpg')
-        }
-      }
-    }
-
-    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fakeWhatsAppBusiness, false)
+    await conn.sendFakeBusiness(m.chat, menuText, pp, m)
 
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
