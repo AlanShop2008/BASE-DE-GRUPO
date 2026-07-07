@@ -23,8 +23,8 @@ let tags = {
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-    let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
-    let name = await conn.getName(userId);
+    let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender
+    let name = await conn.getName(userId)
 
     if (!global.db.data.users) global.db.data.users = {}
     let user = global.db.data.users[userId] || { exp: 0, premium: false }
@@ -40,73 +40,74 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
         limit: plugin.limit,
         premium: plugin.premium,
       }))
-    let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
-    const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
-    let emojiM = global.db.data.chats[m.chat].customEmojiM || '🌸'
 
-    // DISEÑO CUTE / AESTHETIC 🎀
+    let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length
+
+    const fecha = new Date().toLocaleDateString("es-ES", {
+      timeZone: "America/Mexico_City",
+      day: 'numeric',
+      month: 'long'
+    })
+
+    let emojiM = global.db.data.chats[m.chat]?.customEmojiM || '🌸'
+
     let menuText = `*☁️ ───  ¡Hola, ${name}!  ─── ☁️*
 *Tengan un día mágico y lleno de destellos ✨*
 
-🌟 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌟
+🌟 ┈┈┈┈┈┈┈┈┈┈┈┈ 🌟
  ୨୧  *INFO DEL BOT*  ୨୧
-🌟 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌟
+🌟 ┈┈┈┈┈┈┈┈┈┈┈┈ 🌟
  ☁️ *Creador:* Alan Shop
  📅 *Fecha:* \`${fecha}\`
  📊 *Comandos:* \`[ ${totalCommands} ]\`
  🔒 *Modo:* _Privado_ 🎀
 
 _Guía: 🟡 Límite | 🔑 Premium_
- 🌸 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌸
+ 🌸 ┈┈┈┈┈┈┈┈┈┈┈┈ 🌸
 `
 
     for (let tag in tags) {
       let comandos = help.filter(menu => menu.tags.includes(tag))
       if (!comandos.length) continue
 
-      // Cabeceras de categorías ultra cute
       menuText += `\n*⋆  [ ${tags[tag]} ]  ⋆*\n`
       
       comandos.map(menu =>
         menu.help.map(help => {
           let badge = menu.limit ? ' 🟡' : ''
           badge += menu.premium ? ' 🔑' : ''
-          // Formato limpio y tierno para la lista de comandos
           menuText += ` • ${emojiM} *${_p}${help}*${badge}\n`
         })
       )
     }
 
-    menuText += `\n🌸 ┈┈┈┈┈┈┈┈┈┈┈┈┈┈ 🌸\n✨ _Bot optimizado con amor por Alan Shop_ 🎀`
+    menuText += `\n🌸 ┈┈┈┈┈┈┈┈┈┈┈┈ 🌸\n✨ _Bot optimizado con amor por Alan Shop_ 🎀`
 
     await m.react('🌸')
 
-    let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
-    
-    let groupName = await conn.getName(m.chat)
-    let ppUrl
-    try {
-      ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-    } catch {
-      ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
-    }
+    let pp = global.db.data.chats[m.chat]?.customPhotoM || './storage/img/catalogo.png'
 
-    const fgrupo = {
+    const fakeWhatsAppBusiness = {
       key: {
         fromMe: false,
-        participant: "0@s.whatsapp.net",
-        remoteJid: "status@broadcast",
-        id: "Undefined"
+        participant: '0@s.whatsapp.net',
+        remoteJid: 'status@broadcast'
       },
       message: {
-        locationMessage: {
-          name: groupName, 
-          jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+        contactMessage: {
+          displayName: 'WhatsApp Business ✅',
+          vcard: `BEGIN:VCARD
+VERSION:3.0
+FN:WhatsApp Business ✅
+ORG:Contacto;
+TEL;type=CELL;type=VOICE;waid=0:+0
+END:VCARD`
         }
       }
-    };
-    
-    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo, m, fake)
+    }
+
+    await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fakeWhatsAppBusiness)
+
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
     console.error(e)
