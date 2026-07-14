@@ -23,8 +23,8 @@ let tags = {
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
-  let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
-  let name = await conn.getName(userId);
+    let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
+    let name = await conn.getName(userId);
 
     if (!global.db.data.users) global.db.data.users = {}
     let user = global.db.data.users[userId] || { exp: 0, premium: false }
@@ -52,7 +52,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 └────── •• ──────┘
 ┃ 💙 _𝖬𝐨𝐝𝐨_ : 𝐏𝐑𝐈𝐕𝐀𝐃𝐎
 ┃ 💙 _𝐅𝐞𝐜𝐡𝐚_ : ${fecha}
-┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚𝐥_ : ${totalCommands}
+┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚 l_ : ${totalCommands}
 ┃ 💙 _𝖢𝖱𝖤𝖠𝖣𝖮𝖱_ : *𝐀𝐋𝐀𝐍 𝐒𝐇𝐎𝐏*
 ━━━━━━━━━━━━━━━
 
@@ -80,31 +80,40 @@ ${comandos
 
     await m.react('⚡️')
 
-   let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
-    
-let groupName = await conn.getName(m.chat)
-let ppUrl
-try {
-  ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-} catch {
-  ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png' 
-}
+    let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
 
-const fgrupo = {
-  key: {
-    fromMe: false,
-    participant: "0@s.whatsapp.net",
-    remoteJid: "status@broadcast",
-    id: "Undefined"
-  },
-  message: {
-    locationMessage: {
-      name: groupName, 
-      jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+    let ppUrl
+    try {
+      ppUrl = await conn.profilePictureUrl(m.chat, 'image')
+    } catch {
+      ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png'
     }
-  }
-};
-   await conn.sendFile(m.chat, pp, 'thumbnail.jpg', menuText, fgrupo, m, fake)
+
+    // Volvemos a armar tu fgrupo de verificación fake 
+    const fgrupo = {
+      key: {
+        fromMe: false,
+        participant: "0@s.whatsapp.net",
+        remoteJid: "status@broadcast",
+        id: "Undefined"
+      },
+      message: {
+        locationMessage: {
+          name: "𝐀𝐋𝐀𝐍 𝐒𝐓𝐎𝐑𝐄 𝐌𝐗",
+          jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+        }
+      }
+    }
+
+    // MANDAMOS CON EL MÉTODO DIRECTO EVITANDO LA VARIABLE "fake" GLOBAL QUE PODRÍA TRAER METADATOS VIEJOS
+    await conn.sendMessage(m.chat, {
+      image: fs.existsSync(pp) ? fs.readFileSync(pp) : { url: pp },
+      caption: menuText,
+      mentions: [userId]
+    }, { 
+      quoted: fgrupo // Usamos tu fgrupo recuperado como la cita/reply
+    })
+
   } catch (e) {
     conn.reply(m.chat, `✖️ Error al mostrar el menú.\n\n${e}`, m)
     console.error(e)
@@ -121,7 +130,7 @@ function clockString(ms) {
   let h = Math.floor(ms / 3600000)
   let m = Math.floor(ms / 60000) % 60
   let s = Math.floor(ms / 1000) % 60
-  return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
+  return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':')
 }
 
 function getSaludo() {
