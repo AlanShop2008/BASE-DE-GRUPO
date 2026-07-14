@@ -23,6 +23,15 @@ let tags = {
 
 let handler = async (m, { conn, usedPrefix: _p }) => {
   try {
+    // --- VERIFICACIÓN DE EXPIRACIÓN DE RENTA ---
+    if (!global.db.data.botSettings) global.db.data.botSettings = {}
+    let settings = global.db.data.botSettings[conn.user.jid] || { expired: 0 }
+    
+    if (settings.expired && Date.now() > settings.expired) {
+      return conn.reply(m.chat, `⚠️ *El tiempo de renta de este Bot ha caducado.*\n\nComunícate con el dueño (*ALAN SHOP*) para renovar el servicio.`, m)
+    }
+    // -------------------------------------------
+
     let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
     let name = await conn.getName(userId);
 
@@ -40,11 +49,13 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
         limit: plugin.limit,
         premium: plugin.premium,
       }))
+      
     let totalCommands = Object.values(global.plugins).filter(v => v.help && v.tags).length;
     let uptime = Object.values(process.uptime() * 1000)
     const fecha = new Date().toLocaleDateString("es-ES", { timeZone: "America/Mexico_City", day: 'numeric', month: 'long' })
     let emojiM = global.db.data.chats[m.chat].customEmojiM || '🩵'
 
+    // REGRESAMOS A TU DISEÑO ORIGINAL EXACTO (Corregido CREADOR)
     let menuText = `_*¡𝐇𝐨𝐥𝐚 𝐁𝐢𝐞𝐧𝐯𝐞𝐧𝐢𝐝@ ${name} 𝐄𝐬𝐩𝐞𝐫𝐨 𝐲 𝐭𝐞𝐧𝐠𝐚𝐬 𝐮𝐧 𝐠𝐫𝐚𝐧 𝐝𝐢𝐚 ☀️!*_
 
 ┌────── •• ──────┐
@@ -52,8 +63,8 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 └────── •• ──────┘
 ┃ 💙 _𝖬𝐨𝐝𝐨_ : 𝐏𝐑𝐈𝐕𝐀𝐃𝐎
 ┃ 💙 _𝐅𝐞𝐜𝐡𝐚_ : ${fecha}
-┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚 l_ : ${totalCommands}
-┃ 💙 _𝖢𝖱𝖤𝖠𝖣𝖮𝖱_ : *𝐀𝐋𝐀𝐍 𝐒𝐇𝐎𝐏*
+┃ 💙 _𝖢𝐨𝐦𝐚𝐧𝐝𝐨𝐬 𝐞𝐧 𝐭𝐨𝐭𝐚𝐥_ : ${totalCommands}
+┃ 💙 _𝐂𝐑𝐄𝐀𝐃𝐎𝐑_ : *𝐀𝐋𝐀𝐍 𝐒𝐓𝐎𝐑𝐄*
 ━━━━━━━━━━━━━━━
 
 _*L I S T A - D E - C O M A N D O S*_
@@ -69,8 +80,8 @@ ${comandos
   .flatMap(menu =>
     menu.help
       .filter(Boolean)
-      .map(help =>
-        `┃ ${emojiM} ${_p}${help}${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
+      .map(helpCmd =>
+        `┃ ${emojiM} ${_p}${helpCmd}${menu.limit ? ' 🟡' : ''}${menu.premium ? ' 🔒' : ''}`
       )
   )
   .join('\n')}
@@ -81,37 +92,32 @@ ${comandos
     await m.react('⚡️')
 
     let pp = global.db.data.chats[m.chat].customPhotoM || './storage/img/catalogo.png'
+    let botNumber = conn.user.jid.split('@')[0]
 
-    let ppUrl
-    try {
-      ppUrl = await conn.profilePictureUrl(m.chat, 'image')
-    } catch {
-      ppUrl = 'https://telegra.ph/file/24fa902eadfea1e1e0ee3.png'
-    }
+    // Estructura de Contacto Encriptado Fake VCard (Alan Store MX)
+    const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:𝐀𝐋𝐀𝐍 𝐒𝐓𝐎𝐑𝐄 𝐌𝐗\nORG:Streaming Digital;\nTEL;type=CELL;type=VOICE;waid=${botNumber}:+${botNumber}\nEND:VCARD`
 
-    // Volvemos a armar tu fgrupo de verificación fake 
-    const fgrupo = {
+    const fcontacto = {
       key: {
         fromMe: false,
         participant: "0@s.whatsapp.net",
         remoteJid: "status@broadcast",
-        id: "Undefined"
+        id: "AlanStoreFake"
       },
       message: {
-        locationMessage: {
-          name: "𝐀𝐋𝐀𝐍 𝐒𝐓𝐎𝐑𝐄 𝐌𝐗",
-          jpegThumbnail: ppUrl ? await (await fetch(ppUrl)).buffer() : null
+        contactMessage: {
+          displayName: "𝐀𝐋𝐀𝐍 𝐒𝐓𝐎𝐑𝐄",
+          vcard: vcard
         }
       }
     }
 
-    // MANDAMOS CON EL MÉTODO DIRECTO EVITANDO LA VARIABLE "fake" GLOBAL QUE PODRÍA TRAER METADATOS VIEJOS
     await conn.sendMessage(m.chat, {
       image: fs.existsSync(pp) ? fs.readFileSync(pp) : { url: pp },
       caption: menuText,
       mentions: [userId]
     }, { 
-      quoted: fgrupo // Usamos tu fgrupo recuperado como la cita/reply
+      quoted: fcontacto
     })
 
   } catch (e) {
